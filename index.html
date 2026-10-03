@@ -29,7 +29,7 @@
             box-sizing: inherit;
         }
 
-        /* Custom scrollbar for tables */
+        /* Custom scrollbars */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -54,41 +54,41 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased overflow-x-hidden w-full max-w-full">
 
+    <!-- Header with Hamburger Drawer Toggle -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm w-full max-w-full">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <!-- Logo & Brand -->
+                <!-- Hamburger Button & Logo -->
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-100 flex-shrink-0">
-                        <i data-lucide="droplet" class="w-6 h-6 fill-white/20"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-sky-600 to-indigo-700 bg-clip-text text-transparent truncate">HydroLog</h1>
-                        <p class="text-xs text-slate-400 font-medium hidden sm:block truncate">Personal Wellness & Bathroom Tracker</p>
+                    <button id="openMenuBtn" aria-label="Open Navigation Menu" class="p-2 -ml-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition active:scale-95">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-100 flex-shrink-0">
+                            <i data-lucide="droplet" class="w-5 h-5 fill-white/20"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h1 class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-sky-600 to-indigo-700 bg-clip-text text-transparent truncate">HydroLog</h1>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Header Actions -->
-                <div class="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
-                    <button id="exportCsvBtn" class="flex items-center space-x-1.5 px-3 py-2 text-xs sm:text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition active:scale-95">
-                        <i data-lucide="download" class="w-4 h-4"></i>
-                        <span class="hidden sm:inline">Export</span> CSV
-                    </button>
-                    <button id="exportJsonBtn" class="flex items-center space-x-1.5 px-3 py-2 text-xs sm:text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition active:scale-95">
-                        <i data-lucide="file-json" class="w-4 h-4"></i>
-                        <span class="hidden sm:inline">JSON</span>
-                    </button>
-                    <button id="openLogModalBtn" class="flex items-center space-x-2 px-3.5 py-2 text-xs sm:text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-lg shadow-md shadow-sky-200 transition active:scale-95">
+                <div class="flex items-center space-x-2">
+                    <button id="openLogModalBtn" class="flex items-center space-x-1.5 px-3 py-2 text-xs sm:text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl shadow-md shadow-sky-200 transition active:scale-95">
                         <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                        <span>Custom Log</span>
+                        <span class="hidden sm:inline">Custom Log</span>
+                        <span class="sm:hidden">Log</span>
                     </button>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 overflow-x-hidden">
+    <!-- Main Content: Defaulting to Break Logger & Records -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 overflow-x-hidden">
 
+        <!-- "Need to log a break?" Section -->
         <section class="bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 rounded-2xl p-5 sm:p-6 text-white shadow-lg relative overflow-hidden w-full max-w-full">
             <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
             <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -97,11 +97,11 @@
                     <p class="text-sky-100 text-xs sm:text-sm mt-1 max-w-lg">Quickly log your visits with built-in confirmation to avoid accidental entries.</p>
                 </div>
                 <div class="flex items-center gap-2 sm:gap-3 w-full md:w-auto">
-                    <button onclick="requestLogConfirmation('Number One')" class="flex-1 md:flex-none flex items-center justify-center space-x-2 px-4 py-2.5 sm:px-5 sm:py-3 bg-white text-sky-700 hover:bg-sky-50 rounded-xl font-bold text-xs sm:text-sm shadow-md transition active:scale-95">
+                    <button onclick="requestLogConfirmation('Number One')" class="flex-1 md:flex-none flex items-center justify-center space-x-2 px-4 py-3 bg-white text-sky-700 hover:bg-sky-50 rounded-xl font-bold text-xs sm:text-sm shadow-md transition active:scale-95">
                         <span class="text-base sm:text-lg">💧</span>
                         <span>Number One</span>
                     </button>
-                    <button onclick="requestLogConfirmation('Number Two')" class="flex-1 md:flex-none flex items-center justify-center space-x-2 px-4 py-2.5 sm:px-5 sm:py-3 bg-amber-900/80 text-amber-100 hover:bg-amber-900 rounded-xl font-bold text-xs sm:text-sm shadow-md transition backdrop-blur-sm active:scale-95">
+                    <button onclick="requestLogConfirmation('Number Two')" class="flex-1 md:flex-none flex items-center justify-center space-x-2 px-4 py-3 bg-amber-900/80 text-amber-100 hover:bg-amber-900 rounded-xl font-bold text-xs sm:text-sm shadow-md transition backdrop-blur-sm active:scale-95">
                         <span class="text-base sm:text-lg">💩</span>
                         <span>Number Two</span>
                     </button>
@@ -109,115 +109,23 @@
             </div>
         </section>
 
-        <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 w-full max-w-full">
-            <!-- Total Breaks Today -->
-            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-                <div class="flex items-center justify-between text-slate-500 text-[11px] sm:text-xs font-semibold uppercase tracking-wider">
-                    <span>Breaks Today</span>
-                    <i data-lucide="calendar" class="w-4 h-4 text-sky-500 flex-shrink-0"></i>
-                </div>
-                <div class="mt-2 flex items-baseline justify-between">
-                    <span id="statToday" class="text-2xl sm:text-3xl font-extrabold text-slate-800">0</span>
-                    <span id="statTodaySub" class="text-[10px] sm:text-xs text-slate-400">Total</span>
-                </div>
-            </div>
-
-            <!-- Number Ones Today -->
-            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-                <div class="flex items-center justify-between text-slate-500 text-[11px] sm:text-xs font-semibold uppercase tracking-wider">
-                    <span>Number Ones</span>
-                    <span class="text-base">💧</span>
-                </div>
-                <div class="mt-2 flex items-baseline justify-between">
-                    <span id="statNumOne" class="text-2xl sm:text-3xl font-extrabold text-sky-600">0</span>
-                    <span class="text-[10px] sm:text-xs text-slate-400">Hydration</span>
-                </div>
-            </div>
-
-            <!-- Number Twos Today -->
-            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-                <div class="flex items-center justify-between text-slate-500 text-[11px] sm:text-xs font-semibold uppercase tracking-wider">
-                    <span>Number Twos</span>
-                    <span class="text-base">💩</span>
-                </div>
-                <div class="mt-2 flex items-baseline justify-between">
-                    <span id="statNumTwo" class="text-2xl sm:text-3xl font-extrabold text-amber-700">0</span>
-                    <span class="text-[10px] sm:text-xs text-slate-400">Digestive</span>
-                </div>
-            </div>
-
-            <!-- Avg Time Between -->
-            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-                <div class="flex items-center justify-between text-slate-500 text-[11px] sm:text-xs font-semibold uppercase tracking-wider">
-                    <span>Avg Gap</span>
-                    <i data-lucide="clock" class="w-4 h-4 text-indigo-500 flex-shrink-0"></i>
-                </div>
-                <div class="mt-2">
-                    <span id="statAvgGap" class="text-lg sm:text-2xl font-extrabold text-slate-800">--</span>
-                </div>
-            </div>
-
-            <!-- Peak Time -->
-            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between col-span-2 md:col-span-1">
-                <div class="flex items-center justify-between text-slate-500 text-[11px] sm:text-xs font-semibold uppercase tracking-wider">
-                    <span>Peak Time</span>
-                    <i data-lucide="zap" class="w-4 h-4 text-amber-500 flex-shrink-0"></i>
-                </div>
-                <div class="mt-2">
-                    <span id="statPeakTime" class="text-lg sm:text-2xl font-extrabold text-slate-800">--</span>
-                </div>
-            </div>
-        </section>
-
-        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full max-w-full">
-            <!-- Hourly Distribution Bar Chart -->
-            <div class="lg:col-span-2 bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-sm flex flex-col w-full min-w-0">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
-                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-sky-600 flex-shrink-0"></i>
-                        Hourly Break Frequency
-                    </h3>
-                    <span class="text-xs text-slate-400">24-Hour Cycle</span>
-                </div>
-                <div class="relative flex-grow min-h-[200px] sm:min-h-[220px] w-full">
-                    <canvas id="hourlyChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Break Type Breakdown Doughnut Chart -->
-            <div class="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-sm flex flex-col w-full min-w-0">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
-                        <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-600 flex-shrink-0"></i>
-                        Type Breakdown
-                    </h3>
-                    <span class="text-xs text-slate-400">Ratio</span>
-                </div>
-                <div class="relative flex-grow min-h-[200px] sm:min-h-[220px] w-full flex items-center justify-center">
-                    <canvas id="typeChart"></canvas>
-                </div>
-            </div>
-        </section>
-
-        <section class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden w-full max-w-full">
+        <!-- Records Table Section -->
+        <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden w-full max-w-full">
             <!-- Filter & Search Toolbar -->
             <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full">
                 <!-- Search & Filters -->
                 <div class="flex flex-wrap items-center gap-2 sm:gap-3 flex-1 w-full">
-                    <!-- Text Search -->
                     <div class="relative flex-1 min-w-[180px] w-full sm:w-auto">
                         <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <input type="text" id="searchInput" placeholder="Search comments..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500">
                     </div>
 
-                    <!-- Type Filter -->
                     <select id="typeFilter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
                         <option value="ALL">All Types</option>
                         <option value="Number One">💧 Number One</option>
                         <option value="Number Two">💩 Number Two</option>
                     </select>
 
-                    <!-- Date Range Filter -->
                     <input type="date" id="dateFilter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
                 </div>
 
@@ -229,7 +137,7 @@
                 </div>
             </div>
 
-            <!-- Table Container with overflow-x auto to prevent outer body horizontal scroll -->
+            <!-- Scrollable Table Wrapper -->
             <div class="w-full overflow-x-auto max-w-full">
                 <table class="w-full text-left border-collapse min-w-[600px]">
                     <thead>
@@ -253,11 +161,11 @@
                     <i data-lucide="inbox" class="w-6 h-6"></i>
                 </div>
                 <h4 class="font-bold text-slate-700 text-base">No breaks recorded</h4>
-                <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Get started by logging a bathroom visit using the quick buttons or the "+ Custom Log" button above.</p>
+                <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Get started by logging a bathroom visit using the quick buttons above.</p>
             </div>
         </section>
 
-        <footer class="flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 border-t border-slate-200/60 pt-6 gap-4 w-full">
+        <footer class="flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 border-t border-slate-200/60 pt-6 gap-4 w-full pb-8">
             <p class="text-center sm:text-left">© <span id="currentYear"></span> HydroLog. Personal wellness tracker.</p>
             <div class="flex items-center space-x-4">
                 <button id="importJsonBtn" class="hover:text-slate-600 transition flex items-center gap-1 active:scale-95">
@@ -270,6 +178,130 @@
             </div>
         </footer>
     </main>
+
+    <!-- Hamburger Slide-out Drawer Overlay & Container -->
+    <div id="menuDrawerOverlay" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden transition-opacity opacity-0 duration-300">
+        <div id="menuDrawer" class="fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between overflow-y-auto">
+            <div>
+                <!-- Drawer Header -->
+                <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-sky-600 flex items-center justify-center text-white">
+                            <i data-lucide="droplet" class="w-4 h-4 fill-white/20"></i>
+                        </div>
+                        <span class="font-extrabold text-slate-800 text-base">HydroLog Menu</span>
+                    </div>
+                    <button id="closeMenuBtn" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition active:scale-95">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Navigation Options -->
+                <nav class="p-4 space-y-1">
+                    <button onclick="showGraphicModal('dashboard')" class="w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-slate-700 hover:bg-sky-50 hover:text-sky-700 font-semibold text-sm transition active:scale-95">
+                        <div class="p-2 bg-sky-100 text-sky-600 rounded-lg">
+                            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                        </div>
+                        <span>Dashboard Overview</span>
+                    </button>
+
+                    <button onclick="showGraphicModal('hourly')" class="w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-slate-700 hover:bg-sky-50 hover:text-sky-700 font-semibold text-sm transition active:scale-95">
+                        <div class="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
+                            <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                        </div>
+                        <span>Hourly Break Frequency</span>
+                    </button>
+
+                    <button onclick="showGraphicModal('type')" class="w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-slate-700 hover:bg-sky-50 hover:text-sky-700 font-semibold text-sm transition active:scale-95">
+                        <div class="p-2 bg-amber-100 text-amber-700 rounded-lg">
+                            <i data-lucide="pie-chart" class="w-4 h-4"></i>
+                        </div>
+                        <span>Type Breakdown Graphic</span>
+                    </button>
+                </nav>
+
+                <hr class="my-2 border-slate-100">
+
+                <div class="px-4 py-2">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">Data Management</span>
+                    <div class="mt-2 space-y-1">
+                        <button id="drawerExportCsvBtn" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-xs sm:text-sm transition active:scale-95">
+                            <i data-lucide="download" class="w-4 h-4 text-slate-400"></i>
+                            <span>Export CSV</span>
+                        </button>
+                        <button id="drawerExportJsonBtn" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-xs sm:text-sm transition active:scale-95">
+                            <i data-lucide="file-json" class="w-4 h-4 text-slate-400"></i>
+                            <span>Export JSON Backup</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+                <p class="text-[11px] text-slate-400 text-center">Version 1.2 • Local Storage Mode</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphics / Analytics Overlay Modal -->
+    <div id="graphicModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden transition-opacity opacity-0 duration-200 overflow-y-auto max-w-full">
+        <div class="bg-white rounded-2xl max-w-3xl w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-transform scale-95 duration-200 max-h-[90vh] overflow-y-auto">
+            
+            <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <div id="graphicIconBadge" class="p-2 rounded-lg bg-sky-100 text-sky-600">
+                        <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+                    </div>
+                    <h3 id="graphicModalTitle" class="text-base sm:text-lg font-extrabold text-slate-800">Analytics Graphic</h3>
+                </div>
+                <button onclick="closeGraphicModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition active:scale-95">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Content Area for Dashboard Stats -->
+            <div id="graphicContentDashboard" class="hidden space-y-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                        <span class="text-slate-400 text-[11px] font-bold uppercase">Breaks Today</span>
+                        <div id="modalStatToday" class="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">0</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                        <span class="text-slate-400 text-[11px] font-bold uppercase">Number Ones</span>
+                        <div id="modalStatNumOne" class="text-2xl sm:text-3xl font-extrabold text-sky-600 mt-1">0</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                        <span class="text-slate-400 text-[11px] font-bold uppercase">Number Twos</span>
+                        <div id="modalStatNumTwo" class="text-2xl sm:text-3xl font-extrabold text-amber-700 mt-1">0</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                        <span class="text-slate-400 text-[11px] font-bold uppercase">Avg Gap</span>
+                        <div id="modalStatAvgGap" class="text-xl sm:text-2xl font-extrabold text-slate-800 mt-1">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area for Hourly Chart -->
+            <div id="graphicContentHourly" class="hidden">
+                <div class="relative min-h-[250px] sm:min-h-[300px] w-full">
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Content Area for Type Chart -->
+            <div id="graphicContentType" class="hidden">
+                <div class="relative min-h-[250px] sm:min-h-[300px] w-full flex items-center justify-center">
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-3 border-t border-slate-100 flex justify-end">
+                <button onclick="closeGraphicModal()" class="px-5 py-2.5 text-xs sm:text-sm font-bold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-md transition active:scale-95">
+                    Close & Return
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Save Confirmation Dialog / Modal -->
     <div id="confirmModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden transition-opacity opacity-0 duration-200 overflow-y-auto max-w-full">
@@ -313,7 +345,6 @@
             <form id="breakForm" class="space-y-4">
                 <input type="hidden" id="editEntryId" value="">
 
-                <!-- Break Type Selection -->
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Select Type</label>
                     <div class="grid grid-cols-2 gap-3">
@@ -334,13 +365,11 @@
                     </div>
                 </div>
 
-                <!-- Timestamp Override -->
                 <div id="createdDateGroup" class="hidden">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Created Date & Time</label>
                     <input type="datetime-local" id="createdDatetime" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
                 </div>
 
-                <!-- Comments/Notes -->
                 <div>
                     <label for="breakComments" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Comments / Notes (Optional)</label>
                     <textarea id="breakComments" rows="3" placeholder="Hydration status, symptoms, or notes..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"></textarea>
@@ -363,9 +392,8 @@
         let currentFilterPill = 'all';
         let hourlyChartInstance = null;
         let typeChartInstance = null;
-        let pendingLogType = null; // Holds break type during confirmation dialog
+        let pendingLogType = null;
 
-        // Initialize Lucide Icons & App
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             document.getElementById('currentYear').textContent = new Date().getFullYear();
@@ -530,10 +558,7 @@
             const numOnesToday = todayBreaks.filter(b => b.type === 'Number One').length;
             const numTwosToday = todayBreaks.filter(b => b.type === 'Number Two').length;
 
-            document.getElementById('statToday').textContent = todayBreaks.length;
-            document.getElementById('statNumOne').textContent = numOnesToday;
-            document.getElementById('statNumTwo').textContent = numTwosToday;
-
+            let avgHoursStr = '--';
             const sorted = [...breaks].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             if (sorted.length > 1) {
                 let totalDiff = 0;
@@ -541,30 +566,13 @@
                     totalDiff += new Date(sorted[i].createdAt) - new Date(sorted[i - 1].createdAt);
                 }
                 const avgMs = totalDiff / (sorted.length - 1);
-                const avgHours = (avgMs / (1000 * 60 * 60)).toFixed(1);
-                document.getElementById('statAvgGap').textContent = `${avgHours} hrs`;
-            } else {
-                document.getElementById('statAvgGap').textContent = '--';
+                avgHoursStr = `${(avgMs / (1000 * 60 * 60)).toFixed(1)} hrs`;
             }
 
-            if (breaks.length > 0) {
-                const hourCounts = new Array(24).fill(0);
-                breaks.forEach(b => {
-                    const hour = new Date(b.createdAt).getHours();
-                    hourCounts[hour]++;
-                });
-                const maxCount = Math.max(...hourCounts);
-                if (maxCount > 0) {
-                    const peakHour = hourCounts.indexOf(maxCount);
-                    const ampm = peakHour >= 12 ? 'PM' : 'AM';
-                    const formattedHour = (peakHour % 12) || 12;
-                    document.getElementById('statPeakTime').textContent = `${formattedHour} ${ampm}`;
-                } else {
-                    document.getElementById('statPeakTime').textContent = '--';
-                }
-            } else {
-                document.getElementById('statPeakTime').textContent = '--';
-            }
+            document.getElementById('modalStatToday').textContent = todayBreaks.length;
+            document.getElementById('modalStatNumOne').textContent = numOnesToday;
+            document.getElementById('modalStatNumTwo').textContent = numTwosToday;
+            document.getElementById('modalStatAvgGap').textContent = avgHoursStr;
         }
 
         function initCharts() {
@@ -635,6 +643,78 @@
             const twos = breaks.filter(b => b.type === 'Number Two').length;
             typeChartInstance.data.datasets[0].data = [ones, twos];
             typeChartInstance.update();
+        }
+
+        function openDrawer() {
+            const overlay = document.getElementById('menuDrawerOverlay');
+            const drawer = document.getElementById('menuDrawer');
+            overlay.classList.remove('hidden');
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0');
+                drawer.classList.remove('-translate-x-full');
+            }, 10);
+        }
+
+        function closeDrawer() {
+            const overlay = document.getElementById('menuDrawerOverlay');
+            const drawer = document.getElementById('menuDrawer');
+            drawer.classList.add('-translate-x-full');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 300);
+        }
+
+        function showGraphicModal(type) {
+            closeDrawer();
+
+            const modal = document.getElementById('graphicModal');
+            const title = document.getElementById('graphicModalTitle');
+            const badge = document.getElementById('graphicIconBadge');
+
+            const dashView = document.getElementById('graphicContentDashboard');
+            const hourlyView = document.getElementById('graphicContentHourly');
+            const typeView = document.getElementById('graphicContentType');
+
+            dashView.classList.add('hidden');
+            hourlyView.classList.add('hidden');
+            typeView.classList.add('hidden');
+
+            if (type === 'dashboard') {
+                title.textContent = "Dashboard Analytics";
+                badge.className = "p-2 rounded-lg bg-sky-100 text-sky-600";
+                badge.innerHTML = `<i data-lucide="layout-dashboard" class="w-5 h-5"></i>`;
+                dashView.classList.remove('hidden');
+            } else if (type === 'hourly') {
+                title.textContent = "Hourly Break Frequency Graphic";
+                badge.className = "p-2 rounded-lg bg-indigo-100 text-indigo-600";
+                badge.innerHTML = `<i data-lucide="bar-chart-2" class="w-5 h-5"></i>`;
+                hourlyView.classList.remove('hidden');
+            } else if (type === 'type') {
+                title.textContent = "Type Breakdown Graphic";
+                badge.className = "p-2 rounded-lg bg-amber-100 text-amber-700";
+                badge.innerHTML = `<i data-lucide="pie-chart" class="w-5 h-5"></i>`;
+                typeView.classList.remove('hidden');
+            }
+
+            lucide.createIcons();
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.children[0].classList.remove('scale-95');
+                if (hourlyChartInstance) hourlyChartInstance.resize();
+                if (typeChartInstance) typeChartInstance.resize();
+            }, 10);
+        }
+
+        function closeGraphicModal() {
+            const modal = document.getElementById('graphicModal');
+            modal.classList.add('opacity-0');
+            modal.children[0].classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
         }
 
         function requestLogConfirmation(type) {
@@ -900,6 +980,23 @@
         }
 
         function setupEventListeners() {
+            // Drawer triggers
+            document.getElementById('openMenuBtn').addEventListener('click', openDrawer);
+            document.getElementById('closeMenuBtn').addEventListener('click', closeDrawer);
+            document.getElementById('menuDrawerOverlay').addEventListener('click', (e) => {
+                if (e.target.id === 'menuDrawerOverlay') closeDrawer();
+            });
+
+            // Drawer Export shortcuts
+            document.getElementById('drawerExportCsvBtn').addEventListener('click', () => {
+                closeDrawer();
+                exportToCSV();
+            });
+            document.getElementById('drawerExportJsonBtn').addEventListener('click', () => {
+                closeDrawer();
+                exportJSON();
+            });
+
             // Confirmation modal triggers
             document.getElementById('cancelConfirmBtn').addEventListener('click', closeConfirmModal);
             document.getElementById('proceedConfirmBtn').addEventListener('click', executeConfirmedLog);
@@ -911,8 +1008,6 @@
             document.getElementById('breakForm').addEventListener('submit', saveBreak);
 
             // Export & Data operations
-            document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
-            document.getElementById('exportJsonBtn').addEventListener('click', exportJSON);
             document.getElementById('importJsonBtn').addEventListener('click', () => document.getElementById('importFileInput').click());
             document.getElementById('importFileInput').addEventListener('change', importJSON);
             document.getElementById('clearDataBtn').addEventListener('click', clearAllData);
