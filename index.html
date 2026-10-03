@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HydroLog - Bathroom Break Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Custom scrollbar for tables */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo & Brand -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-100">
+                        <i data-lucide="droplet" class="w-6 h-6 fill-white/20"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-sky-600 to-indigo-700 bg-clip-text text-transparent">HydroLog</h1>
+                        <p class="text-xs text-slate-400 font-medium hidden sm:block">Personal Wellness & Bathroom Tracker</p>
+                    </div>
+                </div>
+
+                <!-- Header Actions -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <button id="exportCsvBtn" class="flex items-center space-x-1.5 px-3 py-2 text-xs sm:text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Export</span> CSV
+                    </button>
+                    <button id="exportJsonBtn" class="flex items-center space-x-1.5 px-3 py-2 text-xs sm:text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
+                        <i data-lucide="file-json" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">JSON</span>
+                    </button>
+                    <button id="openLogModalBtn" class="flex items-center space-x-2 px-4 py-2 text-xs sm:text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-lg shadow-md shadow-sky-200 transition active:scale-95">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>Log Break</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+
+        <!-- Quick Log Banner (Mobile Friendly Hero Card) -->
+        <section class="bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-extrabold tracking-tight">Need to take a break?</h2>
+                    <p class="text-sky-100 text-sm mt-1 max-w-lg">Quick log your bathroom visits to keep track of your hydration and digestive wellness trends.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="quickLog('Number One')" class="flex-1 md:flex-none flex items-center justify-center space-x-2 px-5 py-3 bg-white text-sky-700 hover:bg-sky-50 rounded-xl font-bold text-sm shadow-md transition active:scale-95">
+                        <span class="text-lg">💧</span>
+                        <span>Number One</span>
+                    </button>
+                    <button onclick="quickLog('Number Two')" class="flex-1 md:flex-none flex items-center justify-center space-x-2 px-5 py-3 bg-amber-900/80 text-amber-100 hover:bg-amber-900 rounded-xl font-bold text-sm shadow-md transition backdrop-blur-sm active:scale-95">
+                        <span class="text-lg">💩</span>
+                        <span>Number Two</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            <!-- Total Breaks Today -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-semibold uppercase tracking-wider">
+                    <span>Breaks Today</span>
+                    <i data-lucide="calendar" class="w-4 h-4 text-sky-500"></i>
+                </div>
+                <div class="mt-2 flex items-baseline justify-between">
+                    <span id="statToday" class="text-2xl sm:text-3xl font-extrabold text-slate-800">0</span>
+                    <span id="statTodaySub" class="text-xs text-slate-400">0% vs avg</span>
+                </div>
+            </div>
+
+            <!-- Number Ones Today -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-semibold uppercase tracking-wider">
+                    <span>Number Ones</span>
+                    <span class="text-base">💧</span>
+                </div>
+                <div class="mt-2 flex items-baseline justify-between">
+                    <span id="statNumOne" class="text-2xl sm:text-3xl font-extrabold text-sky-600">0</span>
+                    <span class="text-xs text-slate-400">Hydration</span>
+                </div>
+            </div>
+
+            <!-- Number Twos Today -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-semibold uppercase tracking-wider">
+                    <span>Number Twos</span>
+                    <span class="text-base">💩</span>
+                </div>
+                <div class="mt-2 flex items-baseline justify-between">
+                    <span id="statNumTwo" class="text-2xl sm:text-3xl font-extrabold text-amber-700">0</span>
+                    <span class="text-xs text-slate-400">Digestive</span>
+                </div>
+            </div>
+
+            <!-- Avg Time Between -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-semibold uppercase tracking-wider">
+                    <span>Avg Gap</span>
+                    <i data-lucide="clock" class="w-4 h-4 text-indigo-500"></i>
+                </div>
+                <div class="mt-2">
+                    <span id="statAvgGap" class="text-xl sm:text-2xl font-extrabold text-slate-800">--</span>
+                </div>
+            </div>
+
+            <!-- Peak Time -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between col-span-2 md:col-span-1">
+                <div class="flex items-center justify-between text-slate-500 text-xs font-semibold uppercase tracking-wider">
+                    <span>Peak Time</span>
+                    <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i>
+                </div>
+                <div class="mt-2">
+                    <span id="statPeakTime" class="text-xl sm:text-2xl font-extrabold text-slate-800">--</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Hourly Distribution Bar Chart -->
+            <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-sky-600"></i>
+                        Hourly Break Frequency
+                    </h3>
+                    <span class="text-xs text-slate-400">24-Hour Cycle</span>
+                </div>
+                <div class="relative flex-grow min-h-[220px]">
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Break Type Breakdown Doughnut Chart -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-600"></i>
+                        Type Breakdown
+                    </h3>
+                    <span class="text-xs text-slate-400">Ratio</span>
+                </div>
+                <div class="relative flex-grow min-h-[220px] flex items-center justify-center">
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <!-- Filter & Search Toolbar -->
+            <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <!-- Search & Filters -->
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3 flex-1">
+                    <!-- Text Search -->
+                    <div class="relative flex-1 min-w-[200px]">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="searchInput" placeholder="Search comments..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500">
+                    </div>
+
+                    <!-- Type Filter -->
+                    <select id="typeFilter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                        <option value="ALL">All Types</option>
+                        <option value="Number One">💧 Number One</option>
+                        <option value="Number Two">💩 Number Two</option>
+                    </select>
+
+                    <!-- Date Range Filter -->
+                    <input type="date" id="dateFilter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                </div>
+
+                <!-- Quick Filter Quick Pills -->
+                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg self-start lg:self-auto">
+                    <button onclick="setFilterPill('today')" id="pillToday" class="px-3 py-1.5 text-xs font-semibold rounded-md transition text-slate-600 hover:text-slate-900">Today</button>
+                    <button onclick="setFilterPill('week')" id="pillWeek" class="px-3 py-1.5 text-xs font-semibold rounded-md transition text-slate-600 hover:text-slate-900">This Week</button>
+                    <button onclick="setFilterPill('all')" id="pillAll" class="px-3 py-1.5 text-xs font-semibold rounded-md transition bg-white text-slate-800 shadow-sm">All Time</button>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                            <th class="py-3 px-4 sm:px-6">Type</th>
+                            <th class="py-3 px-4 sm:px-6">Created Date & Time</th>
+                            <th class="py-3 px-4 sm:px-6">Modified Date & Time</th>
+                            <th class="py-3 px-4 sm:px-6 min-w-[200px]">Comments</th>
+                            <th class="py-3 px-4 sm:px-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody" class="divide-y divide-slate-100 text-sm">
+                        <!-- Dynamic Rows Inject Here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden p-8 text-center">
+                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-400">
+                    <i data-lucide="inbox" class="w-6 h-6"></i>
+                </div>
+                <h4 class="font-bold text-slate-700 text-base">No breaks recorded</h4>
+                <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Get started by logging a bathroom visit using the quick buttons or the "+ Log Break" button above.</p>
+            </div>
+        </section>
+
+        <footer class="flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 border-t border-slate-200/60 pt-6 gap-4">
+            <p>© <span id="currentYear"></span> HydroLog. All data stored securely in your browser's LocalStorage.</p>
+            <div class="flex items-center space-x-4">
+                <button id="importJsonBtn" class="hover:text-slate-600 transition flex items-center gap-1">
+                    <i data-lucide="upload" class="w-3.5 h-3.5"></i> Import Backup
+                </button>
+                <input type="file" id="importFileInput" class="hidden" accept=".json">
+                <button id="clearDataBtn" class="text-rose-500 hover:text-rose-700 transition flex items-center gap-1">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear All Data
+                </button>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Log/Edit Modal -->
+    <div id="logModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden transition-opacity opacity-0 duration-200">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-transform scale-95 duration-200">
+            <div class="flex justify-between items-center mb-5">
+                <h3 id="modalTitle" class="text-lg font-bold text-slate-800">Log Bathroom Break</h3>
+                <button id="closeModalBtn" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="breakForm" class="space-y-4">
+                <input type="hidden" id="editEntryId" value="">
+
+                <!-- Break Type Selection -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Select Type</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="breakType" value="Number One" class="peer hidden" checked>
+                            <div class="p-3 border-2 border-slate-200 rounded-xl text-center peer-checked:border-sky-500 peer-checked:bg-sky-50/50 hover:bg-slate-50 transition">
+                                <span class="text-2xl block mb-1">💧</span>
+                                <span class="text-xs font-bold text-slate-700">Number One</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="breakType" value="Number Two" class="peer hidden">
+                            <div class="p-3 border-2 border-slate-200 rounded-xl text-center peer-checked:border-amber-600 peer-checked:bg-amber-50/50 hover:bg-slate-50 transition">
+                                <span class="text-2xl block mb-1">💩</span>
+                                <span class="text-xs font-bold text-slate-700">Number Two</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Timestamp Override (Optional for historical edits) -->
+                <div id="createdDateGroup" class="hidden">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Created Date & Time</label>
+                    <input type="datetime-local" id="createdDatetime" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                </div>
+
+                <!-- Comments/Notes -->
+                <div>
+                    <label for="breakComments" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Comments / Notes (Optional)</label>
+                    <textarea id="breakComments" rows="3" placeholder="Hydration status, symptoms, or notes..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"></textarea>
+                </div>
+
+                <div class="pt-2 flex items-center justify-end space-x-3">
+                    <button type="button" id="cancelModalBtn" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2 text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-lg shadow-md shadow-sky-200 transition">Save Log</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <script>
+        const STORAGE_KEY = 'hydrolog_bathroom_breaks_v1';
+        let breaks = [];
+        let currentFilterPill = 'all';
+        let hourlyChartInstance = null;
+        let typeChartInstance = null;
+
+        // Initialize Lucide Icons
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            loadLocalStorage();
+            initCharts();
+            render();
+            setupEventListeners();
+        });
+
+        // Local Storage Utilities
+        function loadLocalStorage() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    breaks = JSON.parse(stored);
+                } else {
+                    // Seed initial demo data if empty
+                    breaks = getDemoData();
+                    saveLocalStorage();
+                }
+            } catch (e) {
+                console.error("Failed to parse local storage", e);
+                breaks = [];
+            }
+        }
+
+        function saveLocalStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(breaks));
+            render();
+        }
+
+        function getDemoData() {
+            const now = new Date();
+            const createTimestamp = (hoursAgo) => new Date(now.getTime() - hoursAgo * 3600 * 1000).toISOString();
+            return [
+                {
+                    id: '1',
+                    type: 'Number One',
+                    createdAt: createTimestamp(1.5),
+                    modifiedAt: createTimestamp(1.5),
+                    comments: 'Morning glass of water'
+                },
+                {
+                    id: '2',
+                    type: 'Number Two',
+                    createdAt: createTimestamp(4),
+                    modifiedAt: createTimestamp(4),
+                    comments: 'Post-coffee routine'
+                },
+                {
+                    id: '3',
+                    type: 'Number One',
+                    createdAt: createTimestamp(8),
+                    modifiedAt: createTimestamp(8),
+                    comments: ''
+                },
+                {
+                    id: '4',
+                    type: 'Number One',
+                    createdAt: createTimestamp(24),
+                    modifiedAt: createTimestamp(24),
+                    comments: 'Hydrating well'
+                }
+            ];
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '--';
+            const date = new Date(dateString);
+            return new Intl.DateTimeFormat('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            }).format(date);
+        }
+
+        function formatForDateTimeInput(dateString) {
+            const date = new Date(dateString);
+            const pad = (num) => String(num).padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        }
+
+        function render() {
+            renderTable();
+            renderStats();
+            updateCharts();
+        }
+
+        function getFilteredBreaks() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            const typeVal = document.getElementById('typeFilter').value;
+            const dateVal = document.getElementById('dateFilter').value;
+
+            return breaks.filter(item => {
+                // Type Filter
+                if (typeVal !== 'ALL' && item.type !== typeVal) return false;
+
+                // Search Comment Filter
+                if (searchVal && !(item.comments || '').toLowerCase().includes(searchVal)) return false;
+
+                // Date Input Filter
+                if (dateVal) {
+                    const itemDate = new Date(item.createdAt).toISOString().split('T')[0];
+                    if (itemDate !== dateVal) return false;
+                }
+
+                // Quick Filter Pills
+                const itemTime = new Date(item.createdAt).getTime();
+                const now = new Date();
+                if (currentFilterPill === 'today') {
+                    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                    if (itemTime < startOfDay) return false;
+                } else if (currentFilterPill === 'week') {
+                    const sevenDaysAgo = now.getTime() - (7 * 24 * 60 * 60 * 1000);
+                    if (itemTime < sevenDaysAgo) return false;
+                }
+
+                return true;
+            }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        }
+
+        function renderTable() {
+            const filtered = getFilteredBreaks();
+            const tbody = document.getElementById('logsTableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            tbody.innerHTML = '';
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filtered.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/80 transition group';
+
+                const isNumOne = item.type === 'Number One';
+                const typeBadge = isNumOne
+                    ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800"><span class="text-sm">💧</span> Number One</span>`
+                    : `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900"><span class="text-sm">💩</span> Number Two</span>`;
+
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 sm:px-6 align-middle">${typeBadge}</td>
+                    <td class="py-3.5 px-4 sm:px-6 align-middle font-medium text-slate-700 whitespace-nowrap">${formatDate(item.createdAt)}</td>
+                    <td class="py-3.5 px-4 sm:px-6 align-middle text-slate-500 text-xs whitespace-nowrap">${formatDate(item.modifiedAt)}</td>
+                    <td class="py-3.5 px-4 sm:px-6 align-middle text-slate-600">${item.comments ? escapeHtml(item.comments) : '<span class="text-slate-300 italic">No notes</span>'}</td>
+                    <td class="py-3.5 px-4 sm:px-6 align-middle text-right space-x-1 whitespace-nowrap">
+                        <button onclick="editLog('${item.id}')" class="p-1.5 text-slate-400 hover:text-sky-600 rounded-lg hover:bg-sky-50 transition" title="Edit">
+                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteLog('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition" title="Delete">
+                            <i data-lucide="trash" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            lucide.createIcons();
+        }
+
+        function renderStats() {
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+            const todayBreaks = breaks.filter(b => new Date(b.createdAt).getTime() >= startOfToday);
+            const numOnesToday = todayBreaks.filter(b => b.type === 'Number One').length;
+            const numTwosToday = todayBreaks.filter(b => b.type === 'Number Two').length;
+
+            document.getElementById('statToday').textContent = todayBreaks.length;
+            document.getElementById('statNumOne').textContent = numOnesToday;
+            document.getElementById('statNumTwo').textContent = numTwosToday;
+
+            // Calculate Average Time Between Breaks (Overall or Today)
+            const sorted = [...breaks].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            if (sorted.length > 1) {
+                let totalDiff = 0;
+                for (let i = 1; i < sorted.length; i++) {
+                    totalDiff += new Date(sorted[i].createdAt) - new Date(sorted[i - 1].createdAt);
+                }
+                const avgMs = totalDiff / (sorted.length - 1);
+                const avgHours = (avgMs / (1000 * 60 * 60)).toFixed(1);
+                document.getElementById('statAvgGap').textContent = `${avgHours} hrs`;
+            } else {
+                document.getElementById('statAvgGap').textContent = '--';
+            }
+
+            // Calculate Peak Hour of Day
+            if (breaks.length > 0) {
+                const hourCounts = new Array(24).fill(0);
+                breaks.forEach(b => {
+                    const hour = new Date(b.createdAt).getHours();
+                    hourCounts[hour]++;
+                });
+                const maxCount = Math.max(...hourCounts);
+                if (maxCount > 0) {
+                    const peakHour = hourCounts.indexOf(maxCount);
+                    const ampm = peakHour >= 12 ? 'PM' : 'AM';
+                    const formattedHour = (peakHour % 12) || 12;
+                    document.getElementById('statPeakTime').textContent = `${formattedHour} ${ampm}`;
+                } else {
+                    document.getElementById('statPeakTime').textContent = '--';
+                }
+            } else {
+                document.getElementById('statPeakTime').textContent = '--';
+            }
+        }
+
+        function initCharts() {
+            // Chart 1: Hourly Distribution
+            const ctxHourly = document.getElementById('hourlyChart').getContext('2d');
+            hourlyChartInstance = new Chart(ctxHourly, {
+                type: 'bar',
+                data: {
+                    labels: Array.from({length: 24}, (_, i) => {
+                        const ampm = i >= 12 ? 'PM' : 'AM';
+                        const h = (i % 12) || 12;
+                        return `${h}${ampm}`;
+                    }),
+                    datasets: [{
+                        label: 'Breaks',
+                        data: new Array(24).fill(0),
+                        backgroundColor: '#38bdf8',
+                        hoverBackgroundColor: '#0284c7',
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, precision: 0 },
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Type Breakdown Doughnut
+            const ctxType = document.getElementById('typeChart').getContext('2d');
+            typeChartInstance = new Chart(ctxType, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Number One', 'Number Two'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: ['#38bdf8', '#d97706'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        function updateCharts() {
+            if (!hourlyChartInstance || !typeChartInstance) return;
+
+            // Update Hourly Data
+            const hourCounts = new Array(24).fill(0);
+            breaks.forEach(b => {
+                const hour = new Date(b.createdAt).getHours();
+                hourCounts[hour]++;
+            });
+            hourlyChartInstance.data.datasets[0].data = hourCounts;
+            hourlyChartInstance.update();
+
+            // Update Type Doughnut Data
+            const ones = breaks.filter(b => b.type === 'Number One').length;
+            const twos = breaks.filter(b => b.type === 'Number Two').length;
+            typeChartInstance.data.datasets[0].data = [ones, twos];
+            typeChartInstance.update();
+        }
+
+        function openModal(editId = null) {
+            const modal = document.getElementById('logModal');
+            const form = document.getElementById('breakForm');
+            const modalTitle = document.getElementById('modalTitle');
+            const createdDateGroup = document.getElementById('createdDateGroup');
+
+            form.reset();
+
+            if (editId) {
+                const entry = breaks.find(b => b.id === editId);
+                if (!entry) return;
+
+                document.getElementById('editEntryId').value = entry.id;
+                modalTitle.textContent = "Edit Bathroom Break";
+
+                // Set type radio
+                const radios = form.elements['breakType'];
+                for (let r of radios) {
+                    if (r.value === entry.type) r.checked = true;
+                }
+
+                // Show & set created date override
+                createdDateGroup.classList.remove('hidden');
+                document.getElementById('createdDatetime').value = formatForDateTimeInput(entry.createdAt);
+
+                document.getElementById('breakComments').value = entry.comments || '';
+            } else {
+                document.getElementById('editEntryId').value = '';
+                modalTitle.textContent = "Log Bathroom Break";
+                createdDateGroup.classList.add('hidden');
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.children[0].classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('logModal');
+            modal.classList.add('opacity-0');
+            modal.children[0].classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function quickLog(type) {
+            const now = new Date().toISOString();
+            const newEntry = {
+                id: Date.now().toString(),
+                type: type,
+                createdAt: now,
+                modifiedAt: now,
+                comments: ''
+            };
+            breaks.unshift(newEntry);
+            saveLocalStorage();
+            showToast(`Logged ${type} ${type === 'Number One' ? '💧' : '💩'}`);
+        }
+
+        function saveBreak(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editEntryId').value;
+            const form = document.getElementById('breakForm');
+            const selectedType = form.elements['breakType'].value;
+            const comments = document.getElementById('breakComments').value.trim();
+            const now = new Date().toISOString();
+
+            if (editId) {
+                // Edit existing
+                const index = breaks.findIndex(b => b.id === editId);
+                if (index !== -1) {
+                    const createdDatetimeVal = document.getElementById('createdDatetime').value;
+                    breaks[index].type = selectedType;
+                    breaks[index].comments = comments;
+                    breaks[index].modifiedAt = now;
+                    if (createdDatetimeVal) {
+                        breaks[index].createdAt = new Date(createdDatetimeVal).toISOString();
+                    }
+                    showToast("Entry updated successfully");
+                }
+            } else {
+                // Create new
+                const newEntry = {
+                    id: Date.now().toString(),
+                    type: selectedType,
+                    createdAt: now,
+                    modifiedAt: now,
+                    comments: comments
+                };
+                breaks.unshift(newEntry);
+                showToast("Break logged successfully");
+            }
+
+            saveLocalStorage();
+            closeModal();
+        }
+
+        function editLog(id) {
+            openModal(id);
+        }
+
+        function deleteLog(id) {
+            if (confirm("Are you sure you want to delete this log entry?")) {
+                breaks = breaks.filter(b => b.id !== id);
+                saveLocalStorage();
+                showToast("Entry deleted", "info");
+            }
+        }
+
+        function setFilterPill(pill) {
+            currentFilterPill = pill;
+            const pills = ['today', 'week', 'all'];
+            pills.forEach(p => {
+                const el = document.getElementById('pill' + p.charAt(0).toUpperCase() + p.slice(1));
+                if (p === pill) {
+                    el.className = "px-3 py-1.5 text-xs font-semibold rounded-md transition bg-white text-slate-800 shadow-sm";
+                } else {
+                    el.className = "px-3 py-1.5 text-xs font-semibold rounded-md transition text-slate-600 hover:text-slate-900";
+                }
+            });
+            renderTable();
+        }
+
+        function exportToCSV() {
+            if (breaks.length === 0) {
+                showToast("No data to export", "warning");
+                return;
+            }
+
+            const headers = ["ID", "Type", "Created Date & Time", "Modified Date & Time", "Comments"];
+            const rows = breaks.map(b => [
+                b.id,
+                `"${b.type}"`,
+                `"${formatDate(b.createdAt)}"`,
+                `"${formatDate(b.modifiedAt)}"`,
+                `"${(b.comments || '').replace(/"/g, '""')}"`
+            ]);
+
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `hydrolog_breaks_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast("CSV exported successfully!");
+        }
+
+        function exportJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(breaks, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `hydrolog_backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast("JSON Backup downloaded");
+        }
+
+        function importJSON(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    if (Array.isArray(imported)) {
+                        breaks = imported;
+                        saveLocalStorage();
+                        showToast("Data imported successfully!");
+                    } else {
+                        showToast("Invalid JSON file format", "error");
+                    }
+                } catch (err) {
+                    showToast("Error reading JSON file", "error");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllData() {
+            if (confirm("Are you sure you want to clear ALL logged break data? This action cannot be undone.")) {
+                breaks = [];
+                saveLocalStorage();
+                showToast("All data cleared", "info");
+            }
+        }
+
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            const bgClass = type === 'success' ? 'bg-slate-900 text-white' : type === 'warning' ? 'bg-amber-600 text-white' : 'bg-rose-600 text-white';
+
+            toast.className = `pointer-events-auto flex items-center gap-2 px-4 py-3 rounded-xl shadow-xl text-sm font-semibold ${bgClass} transition-all transform translate-y-2 opacity-0`;
+            toast.innerHTML = `<span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 200);
+            }, 3000);
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        function setupEventListeners() {
+            document.getElementById('openLogModalBtn').addEventListener('click', () => openModal());
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+            document.getElementById('breakForm').addEventListener('submit', saveBreak);
+
+            // Export buttons
+            document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
+            document.getElementById('exportJsonBtn').addEventListener('click', exportJSON);
+
+            // Import / Clear buttons
+            document.getElementById('importJsonBtn').addEventListener('click', () => document.getElementById('importFileInput').click());
+            document.getElementById('importFileInput').addEventListener('change', importJSON);
+            document.getElementById('clearDataBtn').addEventListener('click', clearAllData);
+
+            // Filter inputs
+            document.getElementById('searchInput').addEventListener('input', renderTable);
+            document.getElementById('typeFilter').addEventListener('change', renderTable);
+            document.getElementById('dateFilter').addEventListener('change', renderTable);
+        }
+    </script>
+</body>
+</html>
