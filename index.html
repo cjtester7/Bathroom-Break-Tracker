@@ -80,7 +80,7 @@
                     </button>
                     <button id="openLogModalBtn" class="flex items-center space-x-2 px-3.5 py-2 text-xs sm:text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-lg shadow-md shadow-sky-200 transition active:scale-95">
                         <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                        <span>Log Break</span>
+                        <span>Custom Log</span>
                     </button>
                 </div>
             </div>
@@ -89,20 +89,19 @@
 
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 overflow-x-hidden">
 
-        <!-- Quick Log Banner -->
         <section class="bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 rounded-2xl p-5 sm:p-6 text-white shadow-lg relative overflow-hidden w-full max-w-full">
             <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
             <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight">Need to take a break?</h2>
-                    <p class="text-sky-100 text-xs sm:text-sm mt-1 max-w-lg">Quick log your bathroom visits to keep track of your hydration and digestive wellness trends.</p>
+                    <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight">Need to log a break?</h2>
+                    <p class="text-sky-100 text-xs sm:text-sm mt-1 max-w-lg">Quickly log your visits with built-in confirmation to avoid accidental entries.</p>
                 </div>
                 <div class="flex items-center gap-2 sm:gap-3 w-full md:w-auto">
-                    <button onclick="quickLog('Number One')" class="flex-1 md:flex-none flex items-center justify-center space-x-2 px-4 py-2.5 sm:px-5 sm:py-3 bg-white text-sky-700 hover:bg-sky-50 rounded-xl font-bold text-xs sm:text-sm shadow-md transition active:scale-95">
+                    <button onclick="requestLogConfirmation('Number One')" class="flex-1 md:flex-none flex items-center justify-center space-x-2 px-4 py-2.5 sm:px-5 sm:py-3 bg-white text-sky-700 hover:bg-sky-50 rounded-xl font-bold text-xs sm:text-sm shadow-md transition active:scale-95">
                         <span class="text-base sm:text-lg">💧</span>
                         <span>Number One</span>
                     </button>
-                    <button onclick="quickLog('Number Two')" class="flex-1 md:flex-none flex items-center justify-center space-x-2 px-4 py-2.5 sm:px-5 sm:py-3 bg-amber-900/80 text-amber-100 hover:bg-amber-900 rounded-xl font-bold text-xs sm:text-sm shadow-md transition backdrop-blur-sm active:scale-95">
+                    <button onclick="requestLogConfirmation('Number Two')" class="flex-1 md:flex-none flex items-center justify-center space-x-2 px-4 py-2.5 sm:px-5 sm:py-3 bg-amber-900/80 text-amber-100 hover:bg-amber-900 rounded-xl font-bold text-xs sm:text-sm shadow-md transition backdrop-blur-sm active:scale-95">
                         <span class="text-base sm:text-lg">💩</span>
                         <span>Number Two</span>
                     </button>
@@ -119,7 +118,7 @@
                 </div>
                 <div class="mt-2 flex items-baseline justify-between">
                     <span id="statToday" class="text-2xl sm:text-3xl font-extrabold text-slate-800">0</span>
-                    <span id="statTodaySub" class="text-[10px] sm:text-xs text-slate-400">0% vs avg</span>
+                    <span id="statTodaySub" class="text-[10px] sm:text-xs text-slate-400">Total</span>
                 </div>
             </div>
 
@@ -222,7 +221,7 @@
                     <input type="date" id="dateFilter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
                 </div>
 
-                <!-- Quick Filter Quick Pills -->
+                <!-- Quick Filter Pills -->
                 <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg self-start lg:self-auto flex-shrink-0">
                     <button onclick="setFilterPill('today')" id="pillToday" class="px-3 py-1.5 text-xs font-semibold rounded-md transition text-slate-600 hover:text-slate-900">Today</button>
                     <button onclick="setFilterPill('week')" id="pillWeek" class="px-3 py-1.5 text-xs font-semibold rounded-md transition text-slate-600 hover:text-slate-900">This Week</button>
@@ -230,7 +229,7 @@
                 </div>
             </div>
 
-            <!-- Table Container with strict overflow-x auto to prevent outer body horizontal scroll -->
+            <!-- Table Container with overflow-x auto to prevent outer body horizontal scroll -->
             <div class="w-full overflow-x-auto max-w-full">
                 <table class="w-full text-left border-collapse min-w-[600px]">
                     <thead>
@@ -254,7 +253,7 @@
                     <i data-lucide="inbox" class="w-6 h-6"></i>
                 </div>
                 <h4 class="font-bold text-slate-700 text-base">No breaks recorded</h4>
-                <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Get started by logging a bathroom visit using the quick buttons or the "+ Log Break" button above.</p>
+                <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Get started by logging a bathroom visit using the quick buttons or the "+ Custom Log" button above.</p>
             </div>
         </section>
 
@@ -272,7 +271,36 @@
         </footer>
     </main>
 
-    <!-- Log/Edit Modal -->
+    <!-- Save Confirmation Dialog / Modal -->
+    <div id="confirmModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden transition-opacity opacity-0 duration-200 overflow-y-auto max-w-full">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-transform scale-95 duration-200">
+            <div class="text-center">
+                <div id="confirmIconBadge" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-3 shadow-inner bg-sky-100 text-sky-600">
+                    💧
+                </div>
+                <h3 class="text-lg font-extrabold text-slate-800">Confirm Logging Break</h3>
+                <p id="confirmSubtitle" class="text-xs text-slate-500 mt-1">Are you sure you want to log this entry right now?</p>
+            </div>
+
+            <div class="mt-4 space-y-3">
+                <div>
+                    <label for="confirmComments" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Optional Note</label>
+                    <input type="text" id="confirmComments" placeholder="Add quick note or symptom..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500">
+                </div>
+
+                <div class="pt-2 flex items-center justify-end space-x-2">
+                    <button type="button" id="cancelConfirmBtn" class="flex-1 py-2.5 px-4 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition active:scale-95">
+                        Cancel
+                    </button>
+                    <button type="button" id="proceedConfirmBtn" class="flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl shadow-md shadow-sky-200 transition active:scale-95">
+                        Confirm & Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Log / Edit Modal -->
     <div id="logModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden transition-opacity opacity-0 duration-200 overflow-y-auto max-w-full">
         <div class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-transform scale-95 duration-200 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-5">
@@ -320,7 +348,7 @@
 
                 <div class="pt-2 flex items-center justify-end space-x-3">
                     <button type="button" id="cancelModalBtn" class="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition active:scale-95">Cancel</button>
-                    <button type="submit" class="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-lg shadow-md shadow-sky-200 transition active:scale-95">Save Log</button>
+                    <button type="submit" class="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-lg shadow-md shadow-sky-200 transition active:scale-95">Save Entry</button>
                 </div>
             </form>
         </div>
@@ -335,6 +363,7 @@
         let currentFilterPill = 'all';
         let hourlyChartInstance = null;
         let typeChartInstance = null;
+        let pendingLogType = null; // Holds break type during confirmation dialog
 
         // Initialize Lucide Icons & App
         document.addEventListener('DOMContentLoaded', () => {
@@ -608,6 +637,64 @@
             typeChartInstance.update();
         }
 
+        function requestLogConfirmation(type) {
+            pendingLogType = type;
+            const confirmModal = document.getElementById('confirmModal');
+            const badge = document.getElementById('confirmIconBadge');
+            const subtitle = document.getElementById('confirmSubtitle');
+            const commentsInput = document.getElementById('confirmComments');
+            const proceedBtn = document.getElementById('proceedConfirmBtn');
+
+            commentsInput.value = '';
+
+            if (type === 'Number One') {
+                badge.className = "w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-3 shadow-inner bg-sky-100 text-sky-600";
+                badge.textContent = "💧";
+                subtitle.textContent = "Log a Number One entry right now?";
+                proceedBtn.className = "flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl shadow-md shadow-sky-200 transition active:scale-95";
+            } else {
+                badge.className = "w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-3 shadow-inner bg-amber-100 text-amber-800";
+                badge.textContent = "💩";
+                subtitle.textContent = "Log a Number Two entry right now?";
+                proceedBtn.className = "flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold text-white bg-amber-700 hover:bg-amber-800 rounded-xl shadow-md shadow-amber-200 transition active:scale-95";
+            }
+
+            confirmModal.classList.remove('hidden');
+            setTimeout(() => {
+                confirmModal.classList.remove('opacity-0');
+                confirmModal.children[0].classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeConfirmModal() {
+            const confirmModal = document.getElementById('confirmModal');
+            confirmModal.classList.add('opacity-0');
+            confirmModal.children[0].classList.add('scale-95');
+            setTimeout(() => {
+                confirmModal.classList.add('hidden');
+                pendingLogType = null;
+            }, 200);
+        }
+
+        function executeConfirmedLog() {
+            if (!pendingLogType) return;
+
+            const comments = document.getElementById('confirmComments').value.trim();
+            const now = new Date().toISOString();
+            const newEntry = {
+                id: Date.now().toString(),
+                type: pendingLogType,
+                createdAt: now,
+                modifiedAt: now,
+                comments: comments
+            };
+
+            breaks.unshift(newEntry);
+            saveLocalStorage();
+            showToast(`Logged ${pendingLogType} ${pendingLogType === 'Number One' ? '💧' : '💩'}`);
+            closeConfirmModal();
+        }
+
         function openModal(editId = null) {
             const modal = document.getElementById('logModal');
             const form = document.getElementById('breakForm');
@@ -633,7 +720,7 @@
                 document.getElementById('breakComments').value = entry.comments || '';
             } else {
                 document.getElementById('editEntryId').value = '';
-                modalTitle.textContent = "Log Bathroom Break";
+                modalTitle.textContent = "Custom Log Bathroom Break";
                 createdDateGroup.classList.add('hidden');
             }
 
@@ -651,20 +738,6 @@
             setTimeout(() => {
                 modal.classList.add('hidden');
             }, 200);
-        }
-
-        function quickLog(type) {
-            const now = new Date().toISOString();
-            const newEntry = {
-                id: Date.now().toString(),
-                type: type,
-                createdAt: now,
-                modifiedAt: now,
-                comments: ''
-            };
-            breaks.unshift(newEntry);
-            saveLocalStorage();
-            showToast(`Logged ${type} ${type === 'Number One' ? '💧' : '💩'}`);
         }
 
         function saveBreak(e) {
@@ -827,18 +900,24 @@
         }
 
         function setupEventListeners() {
+            // Confirmation modal triggers
+            document.getElementById('cancelConfirmBtn').addEventListener('click', closeConfirmModal);
+            document.getElementById('proceedConfirmBtn').addEventListener('click', executeConfirmedLog);
+
+            // Modal triggers
             document.getElementById('openLogModalBtn').addEventListener('click', () => openModal());
             document.getElementById('closeModalBtn').addEventListener('click', closeModal);
             document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
             document.getElementById('breakForm').addEventListener('submit', saveBreak);
 
+            // Export & Data operations
             document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
             document.getElementById('exportJsonBtn').addEventListener('click', exportJSON);
-
             document.getElementById('importJsonBtn').addEventListener('click', () => document.getElementById('importFileInput').click());
             document.getElementById('importFileInput').addEventListener('change', importJSON);
             document.getElementById('clearDataBtn').addEventListener('click', clearAllData);
 
+            // Filter controls
             document.getElementById('searchInput').addEventListener('input', renderTable);
             document.getElementById('typeFilter').addEventListener('change', renderTable);
             document.getElementById('dateFilter').addEventListener('change', renderTable);
