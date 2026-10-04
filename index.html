@@ -1,1022 +1,1552 @@
 <!DOCTYPE html>
+<html lang="en" class="overflow-x-hidden">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <title>HydroLog - Bathroom Break Tracker</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      touch-action: manipulation;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      touch-action: manipulation;
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .modal-backdrop {
+      background-color: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden max-w-full">
+
+  <!-- TOP HEADER / NAV BAR -->
+  <header class="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-md sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      
+      <!-- App Brand & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
+          <i class="fa-solid fa-restroom text-xl text-white"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-xl leading-tight tracking-tight">HydroLog</h1>
+          <p class="text-xs text-blue-100 font-medium">Break & Hydration Tracker</p>
+        </div>
+      </div>
+
+      <!-- Hamburger Menu Toggle Button -->
+      <button id="hamburgerBtn" class="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-all text-white focus:outline-none flex items-center justify-center">
+        <i class="fa-solid fa-bars text-xl"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- HAMBURGER DRAWER / SIDEBAR -->
+  <div id="drawerOverlay" class="fixed inset-0 modal-backdrop z-40 hidden transition-opacity duration-300 opacity-0"></div>
+  <aside id="drawer" class="fixed top-0 left-0 h-full w-80 bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between">
+    <div>
+      <!-- Drawer Header -->
+      <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 text-white flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <i class="fa-solid fa-bars-staggered text-lg"></i>
+          <span class="font-bold text-lg">Menu & Navigation</span>
+        </div>
+        <button id="closeDrawerBtn" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white focus:outline-none">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Drawer Navigation Options -->
+      <nav class="p-4 space-y-2">
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 px-3 py-1">Views & Analytics</p>
+        
+        <button id="navDashboardBtn" class="w-full text-left px-4 py-3 rounded-xl font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition flex items-center justify-between group">
+          <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-chart-line text-blue-500 text-lg w-6"></i>
+            <span>Dashboard Analytics</span>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-1 transition-transform"></i>
+        </button>
+
+        <button id="navHourlyBtn" class="w-full text-left px-4 py-3 rounded-xl font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center justify-between group">
+          <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-clock text-indigo-500 text-lg w-6"></i>
+            <span>Hourly Break Frequency</span>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-1 transition-transform"></i>
+        </button>
+
+        <button id="navBreakdownBtn" class="w-full text-left px-4 py-3 rounded-xl font-medium text-slate-700 hover:bg-cyan-50 hover:text-cyan-600 transition flex items-center justify-between group">
+          <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-chart-pie text-cyan-500 text-lg w-6"></i>
+            <span>Type Breakdown</span>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-1 transition-transform"></i>
+        </button>
+
+        <hr class="my-3 border-slate-100">
+
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 px-3 py-1">Data Management</p>
+
+        <button id="navExportCsvBtn" class="w-full text-left px-4 py-3 rounded-xl font-medium text-emerald-700 hover:bg-emerald-50 transition flex items-center space-x-3">
+          <i class="fa-solid fa-file-csv text-emerald-600 text-lg w-6"></i>
+          <span>Export Records to CSV</span>
+        </button>
+
+        <button id="navExportJsonBtn" class="w-full text-left px-4 py-3 rounded-xl font-medium text-purple-700 hover:bg-purple-50 transition flex items-center space-x-3">
+          <i class="fa-solid fa-file-code text-purple-600 text-lg w-6"></i>
+          <span>Export Backup (JSON)</span>
+        </button>
+
+        <label class="w-full text-left px-4 py-3 rounded-xl font-medium text-amber-700 hover:bg-amber-50 transition flex items-center space-x-3 cursor-pointer">
+          <i class="fa-solid fa-file-import text-amber-600 text-lg w-6"></i>
+          <span>Import Data (JSON)</span>
+          <input type="file" id="jsonFileInput" accept=".json" class="hidden">
+        </label>
+      </nav>
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="p-4 bg-slate-50 border-t border-slate-100">
+      <button id="clearAllBtn" class="w-full py-2.5 px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 font-medium rounded-xl text-xs transition flex items-center justify-center space-x-2">
+        <i class="fa-solid fa-trash-can"></i>
+        <span>Clear All Log Data</span>
+      </button>
+      <p class="text-[11px] text-slate-400 text-center mt-3">HydroLog LocalStorage Sync • Active</p>
+    </div>
+  </aside>
+
+  <!-- MAIN APP CONTENT (DEFAULT STARTUP VIEW: QUICK LOG & RECORDS TABLE) -->
+  <main class="max-w-5xl w-full mx-auto px-3 sm:px-4 py-5 flex-1 space-y-6">
+
+    <!-- 1. QUICK LOG CARD -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-6 transition-all hover:shadow-md">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Need to log a break?</h2>
+          <p class="text-xs text-slate-500">Select the break type below to record current time</p>
+        </div>
+        <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-medium" id="liveClock">--:--</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <!-- Number One Button -->
+        <button id="btnNumberOne" class="group relative bg-gradient-to-br from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-bold py-4 px-5 rounded-2xl shadow-md hover:shadow-lg transition-all transform active:scale-98 flex items-center justify-between overflow-hidden">
+          <div class="flex items-center space-x-3.5 z-10">
+            <div class="w-12 h-12 rounded-xl bg-white/30 backdrop-blur-sm flex items-center justify-center text-2xl shadow-sm">
+              💧
+            </div>
+            <div class="text-left">
+              <span class="block text-xs uppercase tracking-wider font-semibold opacity-80">Quick Log</span>
+              <span class="text-lg font-extrabold text-slate-900">Number One</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-circle-plus text-2xl text-slate-900/40 group-hover:text-slate-900/70 transition z-10"></i>
+        </button>
+
+        <!-- Number Two Button -->
+        <button id="btnNumberTwo" class="group relative bg-gradient-to-br from-amber-700 to-amber-900 hover:from-amber-800 hover:to-amber-950 text-white font-bold py-4 px-5 rounded-2xl shadow-md hover:shadow-lg transition-all transform active:scale-98 flex items-center justify-between overflow-hidden">
+          <div class="flex items-center space-x-3.5 z-10">
+            <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl shadow-sm">
+              💩
+            </div>
+            <div class="text-left">
+              <span class="block text-xs uppercase tracking-wider font-semibold opacity-80">Quick Log</span>
+              <span class="text-lg font-extrabold text-white">Number Two</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-circle-plus text-2xl text-white/40 group-hover:text-white/70 transition z-10"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- 2. RECENT RECORDS TABLE SECTION -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
+            <span>Break Log Records</span>
+            <span id="recordCountBadge" class="text-xs bg-blue-100 text-blue-700 font-semibold px-2.5 py-0.5 rounded-full">0 entries</span>
+          </h2>
+          <p class="text-xs text-slate-500">History of all logged breaks with timestamp data</p>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <!-- Filter Dropdown -->
+          <select id="typeFilter" class="bg-slate-50 border border-slate-200 text-xs text-slate-700 font-medium rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="ALL">All Types</option>
+            <option value="Number One">Number One Only</option>
+            <option value="Number Two">Number Two Only</option>
+          </select>
+
+          <!-- Export CSV Quick Button -->
+          <button id="quickExportCsvBtn" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold px-3 py-2 rounded-xl transition flex items-center space-x-1.5">
+            <i class="fa-solid fa-file-csv text-sm"></i>
+            <span class="hidden sm:inline">Export CSV</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Input -->
+      <div class="relative mb-4">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input type="text" id="searchInput" placeholder="Search comments or dates..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700">
+      </div>
+
+      <!-- Table Scroll Container -->
+      <div class="overflow-x-auto w-full custom-scrollbar border border-slate-100 rounded-xl">
+        <table class="w-full text-left text-xs text-slate-600 min-w-[600px]">
+          <thead class="bg-slate-100/80 text-slate-700 uppercase font-bold text-[11px] tracking-wider border-b border-slate-200">
+            <tr>
+              <th scope="col" class="py-3 px-4">Type</th>
+              <th scope="col" class="py-3 px-4">Created Date & Time</th>
+              <th scope="col" class="py-3 px-4">Modified Date</th>
+              <th scope="col" class="py-3 px-4">Comments / Notes</th>
+              <th scope="col" class="py-3 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="recordsTableBody" class="divide-y divide-slate-100">
+            <!-- Dynamic Content -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State Indicator -->
+      <div id="emptyState" class="py-12 text-center hidden">
+        <div class="w-16 h-16 bg-blue-50 text-blue-400 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+          <i class="fa-solid fa-toilet-paper"></i>
+        </div>
+        <h3 class="text-sm font-bold text-slate-700">No Breaks Logged Yet</h3>
+        <p class="text-xs text-slate-400 max-w-xs mx-auto mt-1">Tap "Number One" or "Number Two" above to record your first break.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-900 text-slate-400 text-xs py-5 px-4 mt-8 border-t border-slate-800">
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-droplet text-blue-400"></i>
+        <span class="font-semibold text-slate-200">HydroLog Tracker</span>
+        <span>— Offline First & Secure</span>
+      </div>
+      <div class="text-slate-500 text-[11px]">
+        CSV Filename Format: <code class="bg-slate-800 text-blue-300 px-1.5 py-0.5 rounded">hydrolog_breaks_YYYY-MM-DD_HHMM.csv</code>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== MODALS SECTION ==================== -->
+
+  <!-- 1. SAVE CONFIRMATION MODAL -->
+  <div id="saveConfirmModal" class="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 space-y-4 border border-slate-100 transform transition-all scale-95 opacity-0 duration-200" id="saveModalBox">
+      <div class="flex items-center space-x-3 text-slate-800 border-b border-slate-100 pb-3">
+        <div id="confirmBadge" class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-sm bg-amber-100">
+          💧
+        </div>
+        <div>
+          <h3 class="font-bold text-base text-slate-900" id="confirmTitle">Confirm Break Entry</h3>
+          <p class="text-xs text-slate-500">Are you sure you want to log this entry?</p>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/60 flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-500">Break Type:</span>
+          <span class="text-xs font-bold text-slate-800" id="confirmTypeLabel">Number One</span>
+        </div>
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/60 flex items-center justify-between">
+          <span class="text-xs font-medium text-slate-500">Timestamp:</span>
+          <span class="text-xs font-semibold text-slate-700" id="confirmTimeLabel">--:--</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Optional Comments / Notes</label>
+          <textarea id="confirmComment" rows="2" placeholder="e.g., Drank 500ml water, fast break..." class="w-full text-xs p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 text-slate-800"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3 pt-2">
+        <button id="cancelSaveBtn" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition">
+          Cancel
+        </button>
+        <button id="confirmSaveBtn" class="w-1/2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md transition">
+          Confirm & Save
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. GRAPHIC OVERLAY: DASHBOARD ANALYTICS MODAL -->
+  <div id="dashboardModal" class="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-5 sm:p-6 space-y-5 border border-slate-100">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+            <i class="fa-solid fa-chart-line text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900">Dashboard Overview</h3>
+            <p class="text-xs text-slate-500">Break count and daily metrics</p>
+          </div>
+        </div>
+        <button class="closeModalBtn text-slate-400 hover:text-slate-600 p-2 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Overview Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-blue-50/70 border border-blue-100 p-3.5 rounded-xl">
+          <span class="block text-[11px] font-semibold text-blue-600 uppercase">Total Logged</span>
+          <span class="text-xl font-bold text-slate-800" id="dashTotalCount">0</span>
+        </div>
+        <div class="bg-amber-50/70 border border-amber-100 p-3.5 rounded-xl">
+          <span class="block text-[11px] font-semibold text-amber-700 uppercase">Number One</span>
+          <span class="text-xl font-bold text-slate-800" id="dashNumOneCount">0</span>
+        </div>
+        <div class="bg-amber-950/5 border border-amber-200 p-3.5 rounded-xl">
+          <span class="block text-[11px] font-semibold text-amber-900 uppercase">Number Two</span>
+          <span class="text-xl font-bold text-slate-800" id="dashNumTwoCount">0</span>
+        </div>
+        <div class="bg-emerald-50/70 border border-emerald-100 p-3.5 rounded-xl">
+          <span class="block text-[11px] font-semibold text-emerald-700 uppercase">Today's Total</span>
+          <span class="text-xl font-bold text-slate-800" id="dashTodayCount">0</span>
+        </div>
+      </div>
+
+      <!-- Multi-day Activity Chart -->
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+        <h4 class="text-xs font-bold text-slate-700 mb-3 uppercase tracking-wider">7-Day Break Activity Trend</h4>
+        <div class="h-56 relative w-full">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. GRAPHIC OVERLAY: HOURLY FREQUENCY MODAL -->
+  <div id="hourlyModal" class="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-5 sm:p-6 space-y-5 border border-slate-100">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+            <i class="fa-solid fa-clock text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900">Hourly Break Frequency</h3>
+            <p class="text-xs text-slate-500">Break distribution by time of day (24-Hour Cycle)</p>
+          </div>
+        </div>
+        <button class="closeModalBtn text-slate-400 hover:text-slate-600 p-2 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+        <div class="h-64 relative w-full">
+          <canvas id="hourlyChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. GRAPHIC OVERLAY: TYPE BREAKDOWN MODAL -->
+  <div id="breakdownModal" class="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-5 sm:p-6 space-y-5 border border-slate-100">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-cyan-100 text-cyan-600 flex items-center justify-center">
+            <i class="fa-solid fa-chart-pie text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900">Break Type Breakdown</h3>
+            <p class="text-xs text-slate-500">Proportional ratio between types</p>
+          </div>
+        </div>
+        <button class="closeModalBtn text-slate-400 hover:text-slate-600 p-2 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 flex flex-col items-center">
+        <div class="h-56 relative w-full flex justify-center">
+          <canvas id="typePieChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. EDIT RECORD MODAL -->
+  <div id="editModal" class="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 space-y-4 border border-slate-100">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-base text-slate-900">Edit Break Record</h3>
+        <button id="closeEditModalBtn" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="editRecordId">
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Break Type</label>
+          <select id="editType" class="w-full text-xs p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
+            <option value="Number One">Number One 💧</option>
+            <option value="Number Two">Number Two 💩</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Created Date & Time</label>
+          <input type="datetime-local" id="editCreatedDate" class="w-full text-xs p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Comments / Notes</label>
+          <textarea id="editComments" rows="3" class="w-full text-xs p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3 pt-2">
+        <button id="cancelEditBtn" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition">
+          Cancel
+        </button>
+        <button id="saveEditBtn" class="w-1/2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md transition">
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APP LOGIC -->
+  <script>
+    // App State
+    let breakRecords = [];
+    let pendingTypeToSave = null;
+    let trendChartInstance = null;
+    let hourlyChartInstance = null;
+    let pieChartInstance = null;
+
+    // LOCAL STORAGE KEYS
+    const STORAGE_KEY = 'hydrolog_break_records_v1';
+
+    // INITIALIZATION
+    document.addEventListener('DOMContentLoaded', () => {
+      loadRecords();
+      initClock();
+      setupEventListeners();
+      renderTable();
+    });
+
+    // CLOCK TICK
+    function initClock() {
+      const clockEl = document.getElementById('liveClock');
+      const updateClock = () => {
+        const now = new Date();
+        clockEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      };
+      updateClock();
+      setInterval(updateClock, 1000);
+    }
+
+    // LOCAL STORAGE OPERATIONS
+    function loadRecords() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          breakRecords = JSON.parse(stored);
+        } else {
+          // Seed sample data if first time
+          breakRecords = [
+            {
+              id: '1',
+              type: 'Number One',
+              createdDate: new Date(Date.now() - 3600000 * 2).toISOString(),
+              modifiedDate: new Date(Date.now() - 3600000 * 2).toISOString(),
+              comments: 'Hydrated with 500ml water'
+            },
+            {
+              id: '2',
+              type: 'Number Two',
+              createdDate: new Date(Date.now() - 3600000 * 5).toISOString(),
+              modifiedDate: new Date(Date.now() - 3600000 * 5).toISOString(),
+              comments: 'Post-coffee break'
+            }
+          ];
+          saveRecords();
+        }
+      } catch (e) {
+        console.error('Error loading records', e);
+        breakRecords = [];
+      }
+    }
+
+    function saveRecords() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(breakRecords));
+      } catch (e) {
+        console.error('Error saving records', e);
+      }
+    }
+
+    // EVENT LISTENERS SETUP
+    function setupEventListeners() {
+      // Quick Log Buttons -> Open Confirmation Modal
+      document.getElementById('btnNumberOne').addEventListener('click', () => triggerSaveConfirmation('Number One'));
+      document.getElementById('btnNumberTwo').addEventListener('click', () => triggerSaveConfirmation('Number Two'));
+
+      // Confirmation Modal Buttons
+      document.getElementById('cancelSaveBtn').addEventListener('click', hideSaveConfirmation);
+      document.getElementById('confirmSaveBtn').addEventListener('click', executeConfirmedSave);
+
+      // Hamburger Menu
+      const hamburgerBtn = document.getElementById('hamburgerBtn');
+      const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+      const drawerOverlay = document.getElementById('drawerOverlay');
+      
+      hamburgerBtn.addEventListener('click', openDrawer);
+      closeDrawerBtn.addEventListener('click', closeDrawer);
+      drawerOverlay.addEventListener('click', closeDrawer);
+
+      // Drawer Navigation Actions
+      document.getElementById('navDashboardBtn').addEventListener('click', () => { closeDrawer(); openModal('dashboardModal'); renderDashboardCharts(); });
+      document.getElementById('navHourlyBtn').addEventListener('click', () => { closeDrawer(); openModal('hourlyModal'); renderHourlyChart(); });
+      document.getElementById('navBreakdownBtn').addEventListener('click', () => { closeDrawer(); openModal('breakdownModal'); renderPieChart(); });
+      
+      document.getElementById('navExportCsvBtn').addEventListener('click', () => { closeDrawer(); exportToCSV(); });
+      document.getElementById('quickExportCsvBtn').addEventListener('click', exportToCSV);
+      document.getElementById('navExportJsonBtn').addEventListener('click', () => { closeDrawer(); exportToJSON(); });
+      document.getElementById('jsonFileInput').addEventListener('change', importFromJSON);
+
+      document.getElementById('clearAllBtn').addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear all logged break records? This action cannot be undone.')) {
+          breakRecords = [];
+          saveRecords();
+          renderTable();
+          closeDrawer();
+        }
+      });
+
+      // Close Modals
+      document.querySelectorAll('.closeModalBtn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const modal = e.target.closest('.modal-backdrop');
+          if (modal) modal.classList.add('hidden');
+        });
+      });
+
+      // Edit Modal Actions
+      document.getElementById('closeEditModalBtn').addEventListener('click', () => document.getElementById('editModal').classList.add('hidden'));
+      document.getElementById('cancelEditBtn').addEventListener('click', () => document.getElementById('editModal').classList.add('hidden'));
+      document.getElementById('saveEditBtn').addEventListener('click', saveEditRecord);
+
+      // Search and Filter Controls
+      document.getElementById('typeFilter').addEventListener('change', renderTable);
+      document.getElementById('searchInput').addEventListener('input', renderTable);
+    }
+
+    // DRAWER CONTROLS
+    function openDrawer() {
+      const drawer = document.getElementById('drawer');
+      const drawerOverlay = document.getElementById('drawerOverlay');
+      drawerOverlay.classList.remove('hidden');
+      setTimeout(() => {
+        drawerOverlay.classList.remove('opacity-0');
+        drawer.classList.remove('-translate-x-full');
+      }, 10);
+    }
+
+    function closeDrawer() {
+      const drawer = document.getElementById('drawer');
+      const drawerOverlay = document.getElementById('drawerOverlay');
+      drawer.classList.add('-translate-x-full');
+      drawerOverlay.classList.add('opacity-0');
+      setTimeout(() => {
+        drawerOverlay.classList.add('hidden');
+      }, 300);
+    }
+
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.remove('hidden');
+    }
+
+    // SAVE CONFIRMATION DIALOG
+    function triggerSaveConfirmation(type) {
+      pendingTypeToSave = type;
+      const modal = document.getElementById('saveConfirmModal');
+      const modalBox = document.getElementById('saveModalBox');
+      const typeLabel = document.getElementById('confirmTypeLabel');
+      const timeLabel = document.getElementById('confirmTimeLabel');
+      const badge = document.getElementById('confirmBadge');
+      
+      typeLabel.textContent = type;
+      timeLabel.textContent = new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+      document.getElementById('confirmComment').value = '';
+
+      if (type === 'Number One') {
+        badge.textContent = '💧';
+        badge.className = 'w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-sm bg-amber-100 text-amber-800';
+      } else {
+        badge.textContent = '💩';
+        badge.className = 'w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-sm bg-amber-900 text-white';
+      }
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modalBox.classList.remove('scale-95', 'opacity-0');
+      }, 10);
+    }
+
+    function hideSaveConfirmation() {
+      const modal = document.getElementById('saveConfirmModal');
+      const modalBox = document.getElementById('saveModalBox');
+      modalBox.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        pendingTypeToSave = null;
+      }, 200);
+    }
+
+    function executeConfirmedSave() {
+      if (!pendingTypeToSave) return;
+
+      const commentInput = document.getElementById('confirmComment').value.trim();
+      const nowISO = new Date().toISOString();
+
+      const newRecord = {
+        id: Date.now().toString(),
+        type: pendingTypeToSave,
+        createdDate: nowISO,
+        modifiedDate: nowISO,
+        comments: commentInput
+      };
+
+      breakRecords.unshift(newRecord);
+      saveRecords();
+      renderTable();
+      hideSaveConfirmation();
+    }
+
+    // RENDER MAIN TABLE
+    function renderTable() {
+      const tbody = document.getElementById('recordsTableBody');
+      const emptyState = document.getElementById('emptyState');
+      const countBadge = document.getElementById('recordCountBadge');
+      
+      const filterType = document.getElementById('typeFilter').value;
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+
+      const filtered = breakRecords.filter(item => {
+        const matchesType = (filterType === 'ALL') || (item.type === filterType);
+        const matchesSearch = item.comments.toLowerCase().includes(searchTerm) ||
+                              formatDateTime(item.createdDate).toLowerCase().includes(searchTerm);
+        return matchesType && matchesSearch;
+      });
+
+      countBadge.textContent = `${filtered.length} entries`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      tbody.innerHTML = filtered.map(record => {
+        const isNumOne = record.type === 'Number One';
+        const typeBadgeClass = isNumOne 
+          ? 'bg-amber-100 text-amber-800 border-amber-200' 
+          : 'bg-amber-900/10 text-amber-900 border-amber-900/20';
+        const icon = isNumOne ? '💧' : '💩';
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${typeBadgeClass}">
+                <span>${icon}</span>
+                <span>${record.type}</span>
+              </span>
+            </td>
+            <td class="py-3 px-4 font-semibold text-slate-800">
+              ${formatDateTime(record.createdDate)}
+            </td>
+            <td class="py-3 px-4 text-slate-400 text-[11px]">
+              ${formatDateTime(record.modifiedDate)}
+            </td>
+            <td class="py-3 px-4 max-w-xs truncate text-slate-600">
+              ${record.comments ? escapeHtml(record.comments) : '<span class="text-slate-300 italic">No notes</span>'}
+            </td>
+            <td class="py-3 px-4 text-right space-x-1">
+              <button onclick="openEditModal('${record.id}')" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Edit Record">
+                <i class="fa-solid fa-pen-to-square text-sm"></i>
+              </button>
+              <button onclick="deleteRecord('${record.id}')" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Delete Record">
+                <i class="fa-solid fa-trash text-sm"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // EDIT RECORD LOGIC
+    window.openEditModal = function(id) {
+      const record = breakRecords.find(r => r.id === id);
+      if (!record) return;
+
+      document.getElementById('editRecordId').value = record.id;
+      document.getElementById('editType').value = record.type;
+      
+      // Convert ISO date to local datetime-local input string
+      const dateObj = new Date(record.createdDate);
+      dateObj.setMinutes(dateObj.getMinutes() - dateObj.getTimezoneOffset());
+      document.getElementById('editCreatedDate').value = dateObj.toISOString().slice(0, 16);
+
+      document.getElementById('editComments').value = record.comments || '';
+
+      document.getElementById('editModal').classList.remove('hidden');
+    };
+
+    function saveEditRecord() {
+      const id = document.getElementById('editRecordId').value;
+      const recordIndex = breakRecords.findIndex(r => r.id === id);
+      if (recordIndex === -1) return;
+
+      const newType = document.getElementById('editType').value;
+      const newCreatedDateVal = document.getElementById('editCreatedDate').value;
+      const newComments = document.getElementById('editComments').value.trim();
+
+      const createdDateObj = newCreatedDateVal ? new Date(newCreatedDateVal) : new Date();
+
+      breakRecords[recordIndex] = {
+        ...breakRecords[recordIndex],
+        type: newType,
+        createdDate: createdDateObj.toISOString(),
+        modifiedDate: new Date().toISOString(),
+        comments: newComments
+      };
+
+      saveRecords();
+      renderTable();
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    window.deleteRecord = function(id) {
+      if (confirm('Are you sure you want to delete this break record?')) {
+        breakRecords = breakRecords.filter(r => r.id !== id);
+        saveRecords();
+        renderTable();
+      }
+    };
+
+    // GENERATE FILENAME WITH TIMESTAMP FORMAT (hydrolog_breaks_YYYY-MM-DD_HHMM.csv)
+    function generateExportFilename(extension) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      
+      return `hydrolog_breaks_${year}-${month}-${day}_${hours}${minutes}.${extension}`;
+    }
+
+    // EXPORT TO CSV
+    function exportToCSV() {
+      if (breakRecords.length === 0) {
+        alert('No break records available to export.');
+        return;
+      }
+
+      const headers = ['ID', 'Type', 'Created Date', 'Modified Date', 'Comments'];
+      const rows = breakRecords.map(r => [
+        r.id,
+        `"${r.type}"`,
+        `"${formatDateTime(r.createdDate)}"`,
+        `"${formatDateTime(r.modifiedDate)}"`,
+        `"${(r.comments || '').replace(/"/g, '""')}"`
+      ]);
+
+      const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const filename = generateExportFilename('csv');
+      
+      downloadFile(blob, filename);
+    }
+
+    // EXPORT TO JSON
+    function exportToJSON() {
+      if (breakRecords.length === 0) {
+        alert('No data to export.');
+        return;
+      }
+      const dataStr = JSON.stringify(breakRecords, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const filename = generateExportFilename('json');
+      
+      downloadFile(blob, filename);
+    }
+
+    function downloadFile(blob, filename) {
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // IMPORT FROM JSON
+    function importFromJSON(event) {
+Here is the updated HTML code incorporating the dynamic timestamp in the export filename (`hydrolog_breaks_YYYY-MM-DD_HHMM.csv`), the hamburger menu drawer with modal graphics, the quick-log confirmation step, anti-zoom viewport settings, and horizontal scroll constraints.
+
+You can save this directly as an **`index.html`** file and open it in any browser:
+
+```html
+<!DOCTYPE html>
 <html lang="en" class="h-full overflow-x-hidden">
 <head>
-    <meta charset="UTF-8">
-    <!-- Viewport configured with user-scalable=no, maximum-scale=1.0, shrink-to-fit=no to disable mobile pinch & zoom -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
-    <title>HydroLog - Bathroom Break Tracker</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons CDN -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <title>HydroLog - Bathroom Break Tracker</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+  <!-- Chart.js CDN -->
+  <script src="[https://cdn.jsdelivr.net/npm/chart.js](https://cdn.jsdelivr.net/npm/chart.js)"></script>
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
+
+  <style>
+    /* Mobile Touch & Scroll Fixes */
+    html, body {
+      touch-action: manipulation;
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
     
-    <style>
-        /* Strict touch & overflow lockdown */
-        html, body {
-            max-width: 100vw !important;
-            overflow-x: hidden !important;
-            touch-action: manipulation; /* Prevents double-tap zooming */
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            -webkit-text-size-adjust: 100%;
-        }
-
-        *, *:before, *:after {
-            box-sizing: inherit;
-        }
-
-        /* Custom scrollbars */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        /* Prevent button zooming and callouts on tap */
-        button, a, input, select, textarea {
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-    </style>
+    /* Smooth Transitions */
+    .drawer-transition {
+      transition: transform 0.3s ease-in-out;
+    }
+    
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased overflow-x-hidden w-full max-w-full">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-full flex flex-col antialiased select-none overflow-x-hidden">
 
-    <!-- Header with Hamburger Drawer Toggle -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm w-full max-w-full">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Hamburger Button & Logo -->
-                <div class="flex items-center space-x-3">
-                    <button id="openMenuBtn" aria-label="Open Navigation Menu" class="p-2 -ml-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition active:scale-95">
-                        <i data-lucide="menu" class="w-6 h-6"></i>
-                    </button>
-                    <div class="flex items-center space-x-2.5">
-                        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-100 flex-shrink-0">
-                            <i data-lucide="droplet" class="w-5 h-5 fill-white/20"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <h1 class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-sky-600 to-indigo-700 bg-clip-text text-transparent truncate">HydroLog</h1>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Header Actions -->
-                <div class="flex items-center space-x-2">
-                    <button id="openLogModalBtn" class="flex items-center space-x-1.5 px-3 py-2 text-xs sm:text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl shadow-md shadow-sky-200 transition active:scale-95">
-                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                        <span class="hidden sm:inline">Custom Log</span>
-                        <span class="sm:hidden">Log</span>
-                    </button>
-                </div>
-            </div>
+  <!-- ================= HEADER ================= -->
+  <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-30">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button id="menu-btn" class="p-2 text-indigo-100 hover:text-white hover:bg-indigo-700/50 rounded-lg focus:outline-none transition" aria-label="Open Menu">
+          <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+        <div class="flex items-center gap-2">
+          <div class="p-2 bg-indigo-500/40 rounded-lg">
+            <i class="fa-solid fa-droplet text-indigo-200"></i>
+          </div>
+          <h1 class="text-xl font-bold tracking-wide">HydroLog</h1>
         </div>
-    </header>
+      </div>
 
-    <!-- Main Content: Defaulting to Break Logger & Records -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 overflow-x-hidden">
+      <div class="flex items-center gap-2">
+        <button id="header-export-btn" class="px-3 py-1.5 bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-csv"></i> Export CSV
+        </button>
+      </div>
+    </div>
+  </header>
 
-        <!-- "Need to log a break?" Section -->
-        <section class="bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 rounded-2xl p-5 sm:p-6 text-white shadow-lg relative overflow-hidden w-full max-w-full">
-            <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
-            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight">Need to log a break?</h2>
-                    <p class="text-sky-100 text-xs sm:text-sm mt-1 max-w-lg">Quickly log your visits with built-in confirmation to avoid accidental entries.</p>
-                </div>
-                <div class="flex items-center gap-2 sm:gap-3 w-full md:w-auto">
-                    <button onclick="requestLogConfirmation('Number One')" class="flex-1 md:flex-none flex items-center justify-center space-x-2 px-4 py-3 bg-white text-sky-700 hover:bg-sky-50 rounded-xl font-bold text-xs sm:text-sm shadow-md transition active:scale-95">
-                        <span class="text-base sm:text-lg">💧</span>
-                        <span>Number One</span>
-                    </button>
-                    <button onclick="requestLogConfirmation('Number Two')" class="flex-1 md:flex-none flex items-center justify-center space-x-2 px-4 py-3 bg-amber-900/80 text-amber-100 hover:bg-amber-900 rounded-xl font-bold text-xs sm:text-sm shadow-md transition backdrop-blur-sm active:scale-95">
-                        <span class="text-base sm:text-lg">💩</span>
-                        <span>Number Two</span>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Records Table Section -->
-        <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden w-full max-w-full">
-            <!-- Filter & Search Toolbar -->
-            <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full">
-                <!-- Search & Filters -->
-                <div class="flex flex-wrap items-center gap-2 sm:gap-3 flex-1 w-full">
-                    <div class="relative flex-1 min-w-[180px] w-full sm:w-auto">
-                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="searchInput" placeholder="Search comments..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500">
-                    </div>
-
-                    <select id="typeFilter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
-                        <option value="ALL">All Types</option>
-                        <option value="Number One">💧 Number One</option>
-                        <option value="Number Two">💩 Number Two</option>
-                    </select>
-
-                    <input type="date" id="dateFilter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
-                </div>
-
-                <!-- Quick Filter Pills -->
-                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg self-start lg:self-auto flex-shrink-0">
-                    <button onclick="setFilterPill('today')" id="pillToday" class="px-3 py-1.5 text-xs font-semibold rounded-md transition text-slate-600 hover:text-slate-900">Today</button>
-                    <button onclick="setFilterPill('week')" id="pillWeek" class="px-3 py-1.5 text-xs font-semibold rounded-md transition text-slate-600 hover:text-slate-900">This Week</button>
-                    <button onclick="setFilterPill('all')" id="pillAll" class="px-3 py-1.5 text-xs font-semibold rounded-md transition bg-white text-slate-800 shadow-sm">All Time</button>
-                </div>
-            </div>
-
-            <!-- Scrollable Table Wrapper -->
-            <div class="w-full overflow-x-auto max-w-full">
-                <table class="w-full text-left border-collapse min-w-[600px]">
-                    <thead>
-                        <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-                            <th class="py-3 px-4 sm:px-6">Type</th>
-                            <th class="py-3 px-4 sm:px-6">Created Date & Time</th>
-                            <th class="py-3 px-4 sm:px-6">Modified Date & Time</th>
-                            <th class="py-3 px-4 sm:px-6 min-w-[180px]">Comments</th>
-                            <th class="py-3 px-4 sm:px-6 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="logsTableBody" class="divide-y divide-slate-100 text-xs sm:text-sm">
-                        <!-- Dynamic Rows Inject Here -->
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Empty State -->
-            <div id="emptyState" class="hidden p-8 text-center">
-                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-400">
-                    <i data-lucide="inbox" class="w-6 h-6"></i>
-                </div>
-                <h4 class="font-bold text-slate-700 text-base">No breaks recorded</h4>
-                <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Get started by logging a bathroom visit using the quick buttons above.</p>
-            </div>
-        </section>
-
-        <footer class="flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 border-t border-slate-200/60 pt-6 gap-4 w-full pb-8">
-            <p class="text-center sm:text-left">© <span id="currentYear"></span> HydroLog. Personal wellness tracker.</p>
-            <div class="flex items-center space-x-4">
-                <button id="importJsonBtn" class="hover:text-slate-600 transition flex items-center gap-1 active:scale-95">
-                    <i data-lucide="upload" class="w-3.5 h-3.5"></i> Import Backup
-                </button>
-                <input type="file" id="importFileInput" class="hidden" accept=".json">
-                <button id="clearDataBtn" class="text-rose-500 hover:text-rose-700 transition flex items-center gap-1 active:scale-95">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear All Data
-                </button>
-            </div>
-        </footer>
-    </main>
-
-    <!-- Hamburger Slide-out Drawer Overlay & Container -->
-    <div id="menuDrawerOverlay" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden transition-opacity opacity-0 duration-300">
-        <div id="menuDrawer" class="fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between overflow-y-auto">
-            <div>
-                <!-- Drawer Header -->
-                <div class="p-5 border-b border-slate-100 flex items-center justify-between">
-                    <div class="flex items-center space-x-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-sky-600 flex items-center justify-center text-white">
-                            <i data-lucide="droplet" class="w-4 h-4 fill-white/20"></i>
-                        </div>
-                        <span class="font-extrabold text-slate-800 text-base">HydroLog Menu</span>
-                    </div>
-                    <button id="closeMenuBtn" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition active:scale-95">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
-                </div>
-
-                <!-- Navigation Options -->
-                <nav class="p-4 space-y-1">
-                    <button onclick="showGraphicModal('dashboard')" class="w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-slate-700 hover:bg-sky-50 hover:text-sky-700 font-semibold text-sm transition active:scale-95">
-                        <div class="p-2 bg-sky-100 text-sky-600 rounded-lg">
-                            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                        </div>
-                        <span>Dashboard Overview</span>
-                    </button>
-
-                    <button onclick="showGraphicModal('hourly')" class="w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-slate-700 hover:bg-sky-50 hover:text-sky-700 font-semibold text-sm transition active:scale-95">
-                        <div class="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
-                            <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
-                        </div>
-                        <span>Hourly Break Frequency</span>
-                    </button>
-
-                    <button onclick="showGraphicModal('type')" class="w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-slate-700 hover:bg-sky-50 hover:text-sky-700 font-semibold text-sm transition active:scale-95">
-                        <div class="p-2 bg-amber-100 text-amber-700 rounded-lg">
-                            <i data-lucide="pie-chart" class="w-4 h-4"></i>
-                        </div>
-                        <span>Type Breakdown Graphic</span>
-                    </button>
-                </nav>
-
-                <hr class="my-2 border-slate-100">
-
-                <div class="px-4 py-2">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">Data Management</span>
-                    <div class="mt-2 space-y-1">
-                        <button id="drawerExportCsvBtn" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-xs sm:text-sm transition active:scale-95">
-                            <i data-lucide="download" class="w-4 h-4 text-slate-400"></i>
-                            <span>Export CSV</span>
-                        </button>
-                        <button id="drawerExportJsonBtn" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-xs sm:text-sm transition active:scale-95">
-                            <i data-lucide="file-json" class="w-4 h-4 text-slate-400"></i>
-                            <span>Export JSON Backup</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-4 border-t border-slate-100 bg-slate-50/50">
-                <p class="text-[11px] text-slate-400 text-center">Version 1.2 • Local Storage Mode</p>
-            </div>
-        </div>
+  <!-- ================= SIDE DRAWER & OVERLAY ================= -->
+  <div id="drawer-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden transition-opacity opacity-0"></div>
+  <aside id="drawer" class="fixed top-0 left-0 h-full w-80 bg-white z-50 shadow-2xl drawer-transition -translate-x-full flex flex-col">
+    <div class="p-4 bg-indigo-600 text-white flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-chart-line text-indigo-200"></i>
+        <span class="font-bold text-lg">Analytics & Menu</span>
+      </div>
+      <button id="close-drawer-btn" class="p-1 text-indigo-100 hover:text-white rounded-md">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
     </div>
 
-    <!-- Graphics / Analytics Overlay Modal -->
-    <div id="graphicModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden transition-opacity opacity-0 duration-200 overflow-y-auto max-w-full">
-        <div class="bg-white rounded-2xl max-w-3xl w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-transform scale-95 duration-200 max-h-[90vh] overflow-y-auto">
-            
-            <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
-                <div class="flex items-center space-x-2">
-                    <div id="graphicIconBadge" class="p-2 rounded-lg bg-sky-100 text-sky-600">
-                        <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
-                    </div>
-                    <h3 id="graphicModalTitle" class="text-base sm:text-lg font-extrabold text-slate-800">Analytics Graphic</h3>
-                </div>
-                <button onclick="closeGraphicModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition active:scale-95">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
+    <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 px-3 py-1">Views & Reports</p>
+      
+      <button id="nav-home" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left font-medium text-indigo-600 bg-indigo-50 border border-indigo-100 transition">
+        <i class="fa-solid fa-house w-5 text-indigo-500"></i> Record Logger & Log
+      </button>
 
-            <!-- Content Area for Dashboard Stats -->
-            <div id="graphicContentDashboard" class="hidden space-y-4">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
-                        <span class="text-slate-400 text-[11px] font-bold uppercase">Breaks Today</span>
-                        <div id="modalStatToday" class="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">0</div>
-                    </div>
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
-                        <span class="text-slate-400 text-[11px] font-bold uppercase">Number Ones</span>
-                        <div id="modalStatNumOne" class="text-2xl sm:text-3xl font-extrabold text-sky-600 mt-1">0</div>
-                    </div>
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
-                        <span class="text-slate-400 text-[11px] font-bold uppercase">Number Twos</span>
-                        <div id="modalStatNumTwo" class="text-2xl sm:text-3xl font-extrabold text-amber-700 mt-1">0</div>
-                    </div>
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
-                        <span class="text-slate-400 text-[11px] font-bold uppercase">Avg Gap</span>
-                        <div id="modalStatAvgGap" class="text-xl sm:text-2xl font-extrabold text-slate-800 mt-1">--</div>
-                    </div>
-                </div>
-            </div>
+      <button id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left font-medium text-slate-700 hover:bg-slate-100 transition">
+        <i class="fa-solid fa-chart-pie w-5 text-indigo-500"></i> Dashboard Overview
+      </button>
 
-            <!-- Content Area for Hourly Chart -->
-            <div id="graphicContentHourly" class="hidden">
-                <div class="relative min-h-[250px] sm:min-h-[300px] w-full">
-                    <canvas id="hourlyChart"></canvas>
-                </div>
-            </div>
+      <button id="nav-hourly" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left font-medium text-slate-700 hover:bg-slate-100 transition">
+        <i class="fa-solid fa-clock w-5 text-sky-500"></i> Hourly Break Frequency
+      </button>
 
-            <!-- Content Area for Type Chart -->
-            <div id="graphicContentType" class="hidden">
-                <div class="relative min-h-[250px] sm:min-h-[300px] w-full flex items-center justify-center">
-                    <canvas id="typeChart"></canvas>
-                </div>
-            </div>
+      <button id="nav-type" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left font-medium text-slate-700 hover:bg-slate-100 transition">
+        <i class="fa-solid fa-chart-column w-5 text-amber-500"></i> Type Breakdown
+      </button>
 
-            <div class="mt-6 pt-3 border-t border-slate-100 flex justify-end">
-                <button onclick="closeGraphicModal()" class="px-5 py-2.5 text-xs sm:text-sm font-bold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-md transition active:scale-95">
-                    Close & Return
-                </button>
-            </div>
-        </div>
+      <hr class="my-4 border-slate-200">
+
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 px-3 py-1">Data Management</p>
+      
+      <button id="drawer-export-csv" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left font-medium text-slate-700 hover:bg-slate-100 transition">
+        <i class="fa-solid fa-file-csv w-5 text-emerald-500"></i> Export to CSV
+      </button>
+
+      <button id="drawer-export-json" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left font-medium text-slate-700 hover:bg-slate-100 transition">
+        <i class="fa-solid fa-file-code w-5 text-violet-500"></i> Export JSON Backup
+      </button>
+
+      <button id="drawer-clear-data" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left font-medium text-rose-600 hover:bg-rose-50 transition">
+        <i class="fa-solid fa-trash-can w-5 text-rose-500"></i> Clear All Data
+      </button>
+    </nav>
+
+    <div class="p-4 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 text-center">
+      HydroLog Mobile Tracker &bull; Local Storage
     </div>
+  </aside>
 
-    <!-- Save Confirmation Dialog / Modal -->
-    <div id="confirmModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden transition-opacity opacity-0 duration-200 overflow-y-auto max-w-full">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-transform scale-95 duration-200">
-            <div class="text-center">
-                <div id="confirmIconBadge" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-3 shadow-inner bg-sky-100 text-sky-600">
-                    💧
-                </div>
-                <h3 class="text-lg font-extrabold text-slate-800">Confirm Logging Break</h3>
-                <p id="confirmSubtitle" class="text-xs text-slate-500 mt-1">Are you sure you want to log this entry right now?</p>
-            </div>
+  <!-- ================= MAIN CONTENT (Defaults to Logger) ================= -->
+  <main class="max-w-4xl w-full mx-auto p-4 flex-1 space-y-6 overflow-x-hidden">
 
-            <div class="mt-4 space-y-3">
-                <div>
-                    <label for="confirmComments" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Optional Note</label>
-                    <input type="text" id="confirmComments" placeholder="Add quick note or symptom..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500">
-                </div>
+    <!-- Quick Log Section -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+      <div class="mb-4">
+        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle text-indigo-600"></i> Need to log a break?
+        </h2>
+        <p class="text-xs text-slate-500">Tap a button below to quickly record a bathroom visit.</p>
+      </div>
 
-                <div class="pt-2 flex items-center justify-end space-x-2">
-                    <button type="button" id="cancelConfirmBtn" class="flex-1 py-2.5 px-4 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition active:scale-95">
-                        Cancel
-                    </button>
-                    <button type="button" id="proceedConfirmBtn" class="flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl shadow-md shadow-sky-200 transition active:scale-95">
-                        Confirm & Save
-                    </button>
-                </div>
-            </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <button id="btn-num-1" class="group p-5 bg-gradient-to-br from-sky-50 to-sky-100 hover:from-sky-100 hover:to-sky-200 border border-sky-200 rounded-xl transition duration-150 text-left flex items-center justify-between shadow-sm active:scale-[0.99]">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-600 block mb-1">Quick Action</span>
+            <span class="text-xl font-bold text-sky-900 block">Number One</span>
+            <span class="text-xs text-sky-700">Urination / Hydration visit</span>
+          </div>
+          <div class="w-12 h-12 bg-sky-500 text-white rounded-full flex items-center justify-center text-xl shadow group-hover:scale-110 transition">
+            <i class="fa-solid fa-droplet"></i>
+          </div>
+        </button>
+
+        <button id="btn-num-2" class="group p-5 bg-gradient-to-br from-amber-50 to-amber-100 hover:from-amber-100 hover:to-amber-200 border border-amber-200 rounded-xl transition duration-150 text-left flex items-center justify-between shadow-sm active:scale-[0.99]">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-600 block mb-1">Quick Action</span>
+            <span class="text-xl font-bold text-amber-900 block">Number Two</span>
+            <span class="text-xs text-amber-700">Bowel movement visit</span>
+          </div>
+          <div class="w-12 h-12 bg-amber-500 text-white rounded-full flex items-center justify-center text-xl shadow group-hover:scale-110 transition">
+            <i class="fa-solid fa-toilet"></i>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <!-- Records Table Section -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-indigo-600"></i> Break Log Records
+          </h2>
+          <p class="text-xs text-slate-500">History of all logged visits.</p>
         </div>
-    </div>
 
-    <!-- Custom Log / Edit Modal -->
-    <div id="logModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden transition-opacity opacity-0 duration-200 overflow-y-auto max-w-full">
-        <div class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-transform scale-95 duration-200 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-5">
-                <h3 id="modalTitle" class="text-base sm:text-lg font-bold text-slate-800">Log Bathroom Break</h3>
-                <button id="closeModalBtn" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition active:scale-95">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <form id="breakForm" class="space-y-4">
-                <input type="hidden" id="editEntryId" value="">
-
-                <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Select Type</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="breakType" value="Number One" class="peer hidden" checked>
-                            <div class="p-3 border-2 border-slate-200 rounded-xl text-center peer-checked:border-sky-500 peer-checked:bg-sky-50/50 hover:bg-slate-50 transition">
-                                <span class="text-2xl block mb-1">💧</span>
-                                <span class="text-xs font-bold text-slate-700">Number One</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="breakType" value="Number Two" class="peer hidden">
-                            <div class="p-3 border-2 border-slate-200 rounded-xl text-center peer-checked:border-amber-600 peer-checked:bg-amber-50/50 hover:bg-slate-50 transition">
-                                <span class="text-2xl block mb-1">💩</span>
-                                <span class="text-xs font-bold text-slate-700">Number Two</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <div id="createdDateGroup" class="hidden">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Created Date & Time</label>
-                    <input type="datetime-local" id="createdDatetime" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
-                </div>
-
-                <div>
-                    <label for="breakComments" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Comments / Notes (Optional)</label>
-                    <textarea id="breakComments" rows="3" placeholder="Hydration status, symptoms, or notes..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"></textarea>
-                </div>
-
-                <div class="pt-2 flex items-center justify-end space-x-3">
-                    <button type="button" id="cancelModalBtn" class="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition active:scale-95">Cancel</button>
-                    <button type="submit" class="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-lg shadow-md shadow-sky-200 transition active:scale-95">Save Entry</button>
-                </div>
-            </form>
+        <div class="flex items-center gap-2">
+          <div class="relative flex-1 sm:w-48">
+            <input type="text" id="search-input" placeholder="Search comments..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+          </div>
+          <select id="filter-type" class="text-xs bg-white border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="ALL">All Types</option>
+            <option value="Number One">Number One</option>
+            <option value="Number Two">Number Two</option>
+          </select>
         </div>
+      </div>
+
+      <!-- Table Container with Horizontal Scroll Isolation -->
+      <div class="w-full overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse min-w-[600px]">
+          <thead class="bg-slate-100 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200">
+            <tr>
+              <th class="py-3 px-4">Type</th>
+              <th class="py-3 px-4">Created Date & Time</th>
+              <th class="py-3 px-4">Last Modified</th>
+              <th class="py-3 px-4">Comments</th>
+              <th class="py-3 px-4 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="records-body" class="divide-y divide-slate-200 text-slate-700">
+            <!-- Dynamic Rows rendered via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <div id="empty-state" class="p-8 text-center hidden">
+        <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-2 block"></i>
+        <p class="text-sm text-slate-500 font-medium">No records found.</p>
+        <p class="text-xs text-slate-400 mt-1">Tap one of the quick action buttons above to log a break.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- 1. SAVE CONFIRMATION MODAL -->
+  <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-100">
+      <div class="flex items-center gap-3 mb-3">
+        <div id="confirm-badge" class="w-10 h-10 rounded-full flex items-center justify-center text-white text-lg">
+          <i id="confirm-icon" class="fa-solid"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-800">Confirm Log Entry</h3>
+          <p class="text-xs text-slate-500">Prevent accidental button taps</p>
+        </div>
+      </div>
+
+      <p class="text-sm text-slate-600 mb-4">
+        Log entry for <strong id="confirm-type-text" class="text-slate-900"></strong> at <span id="confirm-time-text" class="text-slate-700 font-semibold"></span>?
+      </p>
+
+      <div class="mb-5">
+        <label for="confirm-notes" class="block text-xs font-semibold text-slate-700 mb-1">Optional Comment / Note</label>
+        <textarea id="confirm-notes" rows="2" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. Drank 500ml water, feeling hydrated..."></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-2">
+        <button id="cancel-confirm-btn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">Cancel</button>
+        <button id="submit-confirm-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow transition">Confirm & Save</button>
+      </div>
     </div>
+  </div>
 
-    <!-- Toast Notification Container -->
-    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none max-w-[90vw]"></div>
+  <!-- 2. EDIT RECORD MODAL -->
+  <div id="edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl">
+      <h3 class="text-base font-bold text-slate-800 mb-3">Edit Break Record</h3>
+      <input type="hidden" id="edit-id">
 
-    <script>
-        const STORAGE_KEY = 'hydrolog_bathroom_breaks_v1';
-        let breaks = [];
-        let currentFilterPill = 'all';
-        let hourlyChartInstance = null;
-        let typeChartInstance = null;
-        let pendingLogType = null;
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Type</label>
+          <select id="edit-type" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <option value="Number One">Number One</option>
+            <option value="Number Two">Number Two</option>
+          </select>
+        </div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            document.getElementById('currentYear').textContent = new Date().getFullYear();
-            loadLocalStorage();
-            initCharts();
-            render();
-            setupEventListeners();
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Comments</label>
+          <textarea id="edit-notes" rows="3" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+        </div>
+      </div>
 
-            // Prevent touch gesture pinch-to-zoom on iOS Safari
-            document.addEventListener('gesturestart', (e) => e.preventDefault());
+      <div class="flex items-center justify-end gap-2 mt-5">
+        <button id="cancel-edit-btn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">Cancel</button>
+        <button id="save-edit-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow transition">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. GRAPHICS OVERLAY MODAL (Dashboard / Charts) -->
+  <div id="graphics-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-4 bg-indigo-600 text-white flex items-center justify-between">
+        <h3 id="graphics-modal-title" class="text-base font-bold flex items-center gap-2">
+          <!-- Title dynamically injected -->
+        </h3>
+        <button id="close-graphics-btn" class="p-1 text-indigo-100 hover:text-white rounded-lg">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <div id="graphics-modal-body" class="p-5 flex-1 overflow-y-auto space-y-6">
+        <!-- Chart containers and metric cards dynamically toggled -->
+        <div id="view-dashboard-content" class="space-y-6 hidden">
+          <div class="grid grid-cols-3 gap-3 text-center">
+            <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100">
+              <span class="text-xs text-indigo-600 font-semibold block">Total Visits</span>
+              <span id="metric-total" class="text-xl font-bold text-indigo-900">0</span>
+            </div>
+            <div class="bg-sky-50 p-3 rounded-xl border border-sky-100">
+              <span class="text-xs text-sky-600 font-semibold block">Number One</span>
+              <span id="metric-num1" class="text-xl font-bold text-sky-900">0</span>
+            </div>
+            <div class="bg-amber-50 p-3 rounded-xl border border-amber-100">
+              <span class="text-xs text-amber-600 font-semibold block">Number Two</span>
+              <span id="metric-num2" class="text-xl font-bold text-amber-900">0</span>
+            </div>
+          </div>
+
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <h4 class="text-xs font-bold text-slate-700 mb-3">Overall Visit Distribution</h4>
+            <div class="h-64 flex items-center justify-center">
+              <canvas id="chart-pie-modal"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div id="view-hourly-content" class="bg-slate-50 p-4 rounded-xl border border-slate-200 hidden">
+          <h4 class="text-xs font-bold text-slate-700 mb-3">24-Hour Break Frequency</h4>
+          <div class="h-64">
+            <canvas id="chart-hourly-modal"></canvas>
+          </div>
+        </div>
+
+        <div id="view-type-content" class="bg-slate-50 p-4 rounded-xl border border-slate-200 hidden">
+          <h4 class="text-xs font-bold text-slate-700 mb-3">Type Comparison</h4>
+          <div class="h-64">
+            <canvas id="chart-bar-modal"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // State Management
+    let breakRecords = JSON.parse(localStorage.getItem('hydrolog_records') || '[]');
+    let pendingType = null;
+    let chartPie = null;
+    let chartHourly = null;
+    let chartBar = null;
+
+    // DOM Elements
+    const drawer = document.getElementById('drawer');
+    const drawerBackdrop = document.getElementById('drawer-backdrop');
+    const menuBtn = document.getElementById('menu-btn');
+    const closeDrawerBtn = document.getElementById('close-drawer-btn');
+
+    const confirmModal = document.getElementById('confirm-modal');
+    const confirmTypeText = document.getElementById('confirm-type-text');
+    const confirmTimeText = document.getElementById('confirm-time-text');
+    const confirmNotes = document.getElementById('confirm-notes');
+    const confirmBadge = document.getElementById('confirm-badge');
+    const confirmIcon = document.getElementById('confirm-icon');
+
+    const editModal = document.getElementById('edit-modal');
+    const graphicsModal = document.getElementById('graphics-modal');
+    const graphicsTitle = document.getElementById('graphics-modal-title');
+
+    // Drawer Toggle Logic
+    function openDrawer() {
+      drawerBackdrop.classList.remove('hidden');
+      setTimeout(() => drawerBackdrop.classList.add('opacity-100'), 10);
+      drawer.classList.remove('-translate-x-full');
+    }
+
+    function closeDrawer() {
+      drawer.classList.add('-translate-x-full');
+      drawerBackdrop.classList.remove('opacity-100');
+      setTimeout(() => drawerBackdrop.classList.add('hidden'), 300);
+    }
+
+    menuBtn.addEventListener('click', openDrawer);
+    closeDrawerBtn.addEventListener('click', closeDrawer);
+    drawerBackdrop.addEventListener('click', closeDrawer);
+
+    // Dynamic Filename Timestamp Generator
+    function getExportFilename(extension) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+
+      return `hydrolog_breaks_${year}-${month}-${day}_${hours}${minutes}.${extension}`;
+    }
+
+    // Save Confirmation Flow
+    function triggerConfirmModal(type) {
+      pendingType = type;
+      confirmTypeText.textContent = type;
+      confirmTimeText.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      confirmNotes.value = '';
+
+      if (type === 'Number One') {
+        confirmBadge.className = 'w-10 h-10 rounded-full flex items-center justify-center text-white text-lg bg-sky-500';
+        confirmIcon.className = 'fa-solid fa-droplet';
+      } else {
+        confirmBadge.className = 'w-10 h-10 rounded-full flex items-center justify-center text-white text-lg bg-amber-500';
+        confirmIcon.className = 'fa-solid fa-toilet';
+      }
+
+      confirmModal.classList.remove('hidden');
+    }
+
+    document.getElementById('btn-num-1').addEventListener('click', () => triggerConfirmModal('Number One'));
+    document.getElementById('btn-num-2').addEventListener('click', () => triggerConfirmModal('Number Two'));
+
+    document.getElementById('cancel-confirm-btn').addEventListener('click', () => {
+      confirmModal.classList.add('hidden');
+      pendingType = null;
+    });
+
+    document.getElementById('submit-confirm-btn').addEventListener('click', () => {
+      if (!pendingType) return;
+
+      const nowISO = new Date().toISOString();
+      const newRecord = {
+        id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        type: pendingType,
+        createdDate: nowISO,
+        modifiedDate: nowISO,
+        comments: confirmNotes.value.trim()
+      };
+
+      breakRecords.unshift(newRecord);
+      saveRecords();
+      renderTable();
+
+      confirmModal.classList.add('hidden');
+      pendingType = null;
+    });
+
+    // Save to LocalStorage
+    function saveRecords() {
+      localStorage.setItem('hydrolog_records', JSON.stringify(breakRecords));
+    }
+
+    // Render Records Table
+    function renderTable() {
+      const tbody = document.getElementById('records-body');
+      const emptyState = document.getElementById('empty-state');
+      const filterType = document.getElementById('filter-type').value;
+      const searchQuery = document.getElementById('search-input').value.toLowerCase();
+
+      tbody.innerHTML = '';
+
+      const filtered = breakRecords.filter(r => {
+        const matchesType = (filterType === 'ALL') || (r.type === filterType);
+        const matchesSearch = !searchQuery || (r.comments && r.comments.toLowerCase().includes(searchQuery));
+        return matchesType && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      } else {
+        emptyState.classList.add('hidden');
+      }
+
+      filtered.forEach(record => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition border-b border-slate-200';
+
+        const createdFormatted = new Date(record.createdDate).toLocaleString([], {
+          year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit'
         });
 
-        function loadLocalStorage() {
-            try {
-                const stored = localStorage.getItem(STORAGE_KEY);
-                if (stored) {
-                    breaks = JSON.parse(stored);
-                } else {
-                    breaks = getDemoData();
-                    saveLocalStorage();
-                }
-            } catch (e) {
-                console.error("Failed to parse local storage", e);
-                breaks = [];
-            }
-        }
-
-        function saveLocalStorage() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(breaks));
-            render();
-        }
-
-        function getDemoData() {
-            const now = new Date();
-            const createTimestamp = (hoursAgo) => new Date(now.getTime() - hoursAgo * 3600 * 1000).toISOString();
-            return [
-                {
-                    id: '1',
-                    type: 'Number One',
-                    createdAt: createTimestamp(1.5),
-                    modifiedAt: createTimestamp(1.5),
-                    comments: 'Morning glass of water'
-                },
-                {
-                    id: '2',
-                    type: 'Number Two',
-                    createdAt: createTimestamp(4),
-                    modifiedAt: createTimestamp(4),
-                    comments: 'Post-coffee routine'
-                },
-                {
-                    id: '3',
-                    type: 'Number One',
-                    createdAt: createTimestamp(8),
-                    modifiedAt: createTimestamp(8),
-                    comments: ''
-                }
-            ];
-        }
-
-        function formatDate(dateString) {
-            if (!dateString) return '--';
-            const date = new Date(dateString);
-            return new Intl.DateTimeFormat('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-            }).format(date);
-        }
-
-        function formatForDateTimeInput(dateString) {
-            const date = new Date(dateString);
-            const pad = (num) => String(num).padStart(2, '0');
-            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-        }
-
-        function render() {
-            renderTable();
-            renderStats();
-            updateCharts();
-        }
-
-        function getFilteredBreaks() {
-            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
-            const typeVal = document.getElementById('typeFilter').value;
-            const dateVal = document.getElementById('dateFilter').value;
-
-            return breaks.filter(item => {
-                if (typeVal !== 'ALL' && item.type !== typeVal) return false;
-                if (searchVal && !(item.comments || '').toLowerCase().includes(searchVal)) return false;
-
-                if (dateVal) {
-                    const itemDate = new Date(item.createdAt).toISOString().split('T')[0];
-                    if (itemDate !== dateVal) return false;
-                }
-
-                const itemTime = new Date(item.createdAt).getTime();
-                const now = new Date();
-                if (currentFilterPill === 'today') {
-                    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                    if (itemTime < startOfDay) return false;
-                } else if (currentFilterPill === 'week') {
-                    const sevenDaysAgo = now.getTime() - (7 * 24 * 60 * 60 * 1000);
-                    if (itemTime < sevenDaysAgo) return false;
-                }
-
-                return true;
-            }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        }
-
-        function renderTable() {
-            const filtered = getFilteredBreaks();
-            const tbody = document.getElementById('logsTableBody');
-            const emptyState = document.getElementById('emptyState');
-
-            tbody.innerHTML = '';
-
-            if (filtered.length === 0) {
-                emptyState.classList.remove('hidden');
-                return;
-            } else {
-                emptyState.classList.add('hidden');
-            }
-
-            filtered.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50/80 transition group';
-
-                const isNumOne = item.type === 'Number One';
-                const typeBadge = isNumOne
-                    ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-sky-100 text-sky-800"><span class="text-xs">💧</span> Number One</span>`
-                    : `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900"><span class="text-xs">💩</span> Number Two</span>`;
-
-                tr.innerHTML = `
-                    <td class="py-3 px-4 sm:px-6 align-middle whitespace-nowrap">${typeBadge}</td>
-                    <td class="py-3 px-4 sm:px-6 align-middle font-medium text-slate-700 whitespace-nowrap">${formatDate(item.createdAt)}</td>
-                    <td class="py-3 px-4 sm:px-6 align-middle text-slate-500 text-xs whitespace-nowrap">${formatDate(item.modifiedAt)}</td>
-                    <td class="py-3 px-4 sm:px-6 align-middle text-slate-600 break-words max-w-[250px]">${item.comments ? escapeHtml(item.comments) : '<span class="text-slate-300 italic">No notes</span>'}</td>
-                    <td class="py-3 px-4 sm:px-6 align-middle text-right space-x-1 whitespace-nowrap">
-                        <button onclick="editLog('${item.id}')" class="p-1.5 text-slate-400 hover:text-sky-600 rounded-lg hover:bg-sky-50 transition active:scale-95" title="Edit">
-                            <i data-lucide="edit-2" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="deleteLog('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition active:scale-95" title="Delete">
-                            <i data-lucide="trash" class="w-4 h-4"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            lucide.createIcons();
-        }
-
-        function renderStats() {
-            const now = new Date();
-            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-
-            const todayBreaks = breaks.filter(b => new Date(b.createdAt).getTime() >= startOfToday);
-            const numOnesToday = todayBreaks.filter(b => b.type === 'Number One').length;
-            const numTwosToday = todayBreaks.filter(b => b.type === 'Number Two').length;
-
-            let avgHoursStr = '--';
-            const sorted = [...breaks].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            if (sorted.length > 1) {
-                let totalDiff = 0;
-                for (let i = 1; i < sorted.length; i++) {
-                    totalDiff += new Date(sorted[i].createdAt) - new Date(sorted[i - 1].createdAt);
-                }
-                const avgMs = totalDiff / (sorted.length - 1);
-                avgHoursStr = `${(avgMs / (1000 * 60 * 60)).toFixed(1)} hrs`;
-            }
-
-            document.getElementById('modalStatToday').textContent = todayBreaks.length;
-            document.getElementById('modalStatNumOne').textContent = numOnesToday;
-            document.getElementById('modalStatNumTwo').textContent = numTwosToday;
-            document.getElementById('modalStatAvgGap').textContent = avgHoursStr;
-        }
-
-        function initCharts() {
-            const ctxHourly = document.getElementById('hourlyChart').getContext('2d');
-            hourlyChartInstance = new Chart(ctxHourly, {
-                type: 'bar',
-                data: {
-                    labels: Array.from({length: 24}, (_, i) => {
-                        const ampm = i >= 12 ? 'PM' : 'AM';
-                        const h = (i % 12) || 12;
-                        return `${h}${ampm}`;
-                    }),
-                    datasets: [{
-                        label: 'Breaks',
-                        data: new Array(24).fill(0),
-                        backgroundColor: '#38bdf8',
-                        hoverBackgroundColor: '#0284c7',
-                        borderRadius: 6,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 1, precision: 0 },
-                            grid: { color: '#f1f5f9' }
-                        },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-
-            const ctxType = document.getElementById('typeChart').getContext('2d');
-            typeChartInstance = new Chart(ctxType, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Number One', 'Number Two'],
-                    datasets: [{
-                        data: [0, 0],
-                        backgroundColor: ['#38bdf8', '#d97706'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } },
-                    cutout: '70%'
-                }
-            });
-        }
-
-        function updateCharts() {
-            if (!hourlyChartInstance || !typeChartInstance) return;
-
-            const hourCounts = new Array(24).fill(0);
-            breaks.forEach(b => {
-                const hour = new Date(b.createdAt).getHours();
-                hourCounts[hour]++;
-            });
-            hourlyChartInstance.data.datasets[0].data = hourCounts;
-            hourlyChartInstance.update();
-
-            const ones = breaks.filter(b => b.type === 'Number One').length;
-            const twos = breaks.filter(b => b.type === 'Number Two').length;
-            typeChartInstance.data.datasets[0].data = [ones, twos];
-            typeChartInstance.update();
-        }
-
-        function openDrawer() {
-            const overlay = document.getElementById('menuDrawerOverlay');
-            const drawer = document.getElementById('menuDrawer');
-            overlay.classList.remove('hidden');
-            setTimeout(() => {
-                overlay.classList.remove('opacity-0');
-                drawer.classList.remove('-translate-x-full');
-            }, 10);
-        }
-
-        function closeDrawer() {
-            const overlay = document.getElementById('menuDrawerOverlay');
-            const drawer = document.getElementById('menuDrawer');
-            drawer.classList.add('-translate-x-full');
-            overlay.classList.add('opacity-0');
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-            }, 300);
-        }
-
-        function showGraphicModal(type) {
-            closeDrawer();
-
-            const modal = document.getElementById('graphicModal');
-            const title = document.getElementById('graphicModalTitle');
-            const badge = document.getElementById('graphicIconBadge');
-
-            const dashView = document.getElementById('graphicContentDashboard');
-            const hourlyView = document.getElementById('graphicContentHourly');
-            const typeView = document.getElementById('graphicContentType');
-
-            dashView.classList.add('hidden');
-            hourlyView.classList.add('hidden');
-            typeView.classList.add('hidden');
-
-            if (type === 'dashboard') {
-                title.textContent = "Dashboard Analytics";
-                badge.className = "p-2 rounded-lg bg-sky-100 text-sky-600";
-                badge.innerHTML = `<i data-lucide="layout-dashboard" class="w-5 h-5"></i>`;
-                dashView.classList.remove('hidden');
-            } else if (type === 'hourly') {
-                title.textContent = "Hourly Break Frequency Graphic";
-                badge.className = "p-2 rounded-lg bg-indigo-100 text-indigo-600";
-                badge.innerHTML = `<i data-lucide="bar-chart-2" class="w-5 h-5"></i>`;
-                hourlyView.classList.remove('hidden');
-            } else if (type === 'type') {
-                title.textContent = "Type Breakdown Graphic";
-                badge.className = "p-2 rounded-lg bg-amber-100 text-amber-700";
-                badge.innerHTML = `<i data-lucide="pie-chart" class="w-5 h-5"></i>`;
-                typeView.classList.remove('hidden');
-            }
-
-            lucide.createIcons();
-
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                modal.children[0].classList.remove('scale-95');
-                if (hourlyChartInstance) hourlyChartInstance.resize();
-                if (typeChartInstance) typeChartInstance.resize();
-            }, 10);
-        }
-
-        function closeGraphicModal() {
-            const modal = document.getElementById('graphicModal');
-            modal.classList.add('opacity-0');
-            modal.children[0].classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 200);
-        }
-
-        function requestLogConfirmation(type) {
-            pendingLogType = type;
-            const confirmModal = document.getElementById('confirmModal');
-            const badge = document.getElementById('confirmIconBadge');
-            const subtitle = document.getElementById('confirmSubtitle');
-            const commentsInput = document.getElementById('confirmComments');
-            const proceedBtn = document.getElementById('proceedConfirmBtn');
-
-            commentsInput.value = '';
-
-            if (type === 'Number One') {
-                badge.className = "w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-3 shadow-inner bg-sky-100 text-sky-600";
-                badge.textContent = "💧";
-                subtitle.textContent = "Log a Number One entry right now?";
-                proceedBtn.className = "flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl shadow-md shadow-sky-200 transition active:scale-95";
-            } else {
-                badge.className = "w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-3 shadow-inner bg-amber-100 text-amber-800";
-                badge.textContent = "💩";
-                subtitle.textContent = "Log a Number Two entry right now?";
-                proceedBtn.className = "flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold text-white bg-amber-700 hover:bg-amber-800 rounded-xl shadow-md shadow-amber-200 transition active:scale-95";
-            }
-
-            confirmModal.classList.remove('hidden');
-            setTimeout(() => {
-                confirmModal.classList.remove('opacity-0');
-                confirmModal.children[0].classList.remove('scale-95');
-            }, 10);
-        }
-
-        function closeConfirmModal() {
-            const confirmModal = document.getElementById('confirmModal');
-            confirmModal.classList.add('opacity-0');
-            confirmModal.children[0].classList.add('scale-95');
-            setTimeout(() => {
-                confirmModal.classList.add('hidden');
-                pendingLogType = null;
-            }, 200);
-        }
-
-        function executeConfirmedLog() {
-            if (!pendingLogType) return;
-
-            const comments = document.getElementById('confirmComments').value.trim();
-            const now = new Date().toISOString();
-            const newEntry = {
-                id: Date.now().toString(),
-                type: pendingLogType,
-                createdAt: now,
-                modifiedAt: now,
-                comments: comments
-            };
-
-            breaks.unshift(newEntry);
-            saveLocalStorage();
-            showToast(`Logged ${pendingLogType} ${pendingLogType === 'Number One' ? '💧' : '💩'}`);
-            closeConfirmModal();
-        }
-
-        function openModal(editId = null) {
-            const modal = document.getElementById('logModal');
-            const form = document.getElementById('breakForm');
-            const modalTitle = document.getElementById('modalTitle');
-            const createdDateGroup = document.getElementById('createdDateGroup');
-
-            form.reset();
-
-            if (editId) {
-                const entry = breaks.find(b => b.id === editId);
-                if (!entry) return;
-
-                document.getElementById('editEntryId').value = entry.id;
-                modalTitle.textContent = "Edit Bathroom Break";
-
-                const radios = form.elements['breakType'];
-                for (let r of radios) {
-                    if (r.value === entry.type) r.checked = true;
-                }
-
-                createdDateGroup.classList.remove('hidden');
-                document.getElementById('createdDatetime').value = formatForDateTimeInput(entry.createdAt);
-                document.getElementById('breakComments').value = entry.comments || '';
-            } else {
-                document.getElementById('editEntryId').value = '';
-                modalTitle.textContent = "Custom Log Bathroom Break";
-                createdDateGroup.classList.add('hidden');
-            }
-
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                modal.children[0].classList.remove('scale-95');
-            }, 10);
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('logModal');
-            modal.classList.add('opacity-0');
-            modal.children[0].classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 200);
-        }
-
-        function saveBreak(e) {
-            e.preventDefault();
-            const editId = document.getElementById('editEntryId').value;
-            const form = document.getElementById('breakForm');
-            const selectedType = form.elements['breakType'].value;
-            const comments = document.getElementById('breakComments').value.trim();
-            const now = new Date().toISOString();
-
-            if (editId) {
-                const index = breaks.findIndex(b => b.id === editId);
-                if (index !== -1) {
-                    const createdDatetimeVal = document.getElementById('createdDatetime').value;
-                    breaks[index].type = selectedType;
-                    breaks[index].comments = comments;
-                    breaks[index].modifiedAt = now;
-                    if (createdDatetimeVal) {
-                        breaks[index].createdAt = new Date(createdDatetimeVal).toISOString();
-                    }
-                    showToast("Entry updated successfully");
-                }
-            } else {
-                const newEntry = {
-                    id: Date.now().toString(),
-                    type: selectedType,
-                    createdAt: now,
-                    modifiedAt: now,
-                    comments: comments
-                };
-                breaks.unshift(newEntry);
-                showToast("Break logged successfully");
-            }
-
-            saveLocalStorage();
-            closeModal();
-        }
-
-        function editLog(id) {
-            openModal(id);
-        }
-
-        function deleteLog(id) {
-            if (confirm("Are you sure you want to delete this log entry?")) {
-                breaks = breaks.filter(b => b.id !== id);
-                saveLocalStorage();
-                showToast("Entry deleted", "info");
-            }
-        }
-
-        function setFilterPill(pill) {
-            currentFilterPill = pill;
-            const pills = ['today', 'week', 'all'];
-            pills.forEach(p => {
-                const el = document.getElementById('pill' + p.charAt(0).toUpperCase() + p.slice(1));
-                if (p === pill) {
-                    el.className = "px-3 py-1.5 text-xs font-semibold rounded-md transition bg-white text-slate-800 shadow-sm";
-                } else {
-                    el.className = "px-3 py-1.5 text-xs font-semibold rounded-md transition text-slate-600 hover:text-slate-900";
-                }
-            });
-            renderTable();
-        }
-
-        function exportToCSV() {
-            if (breaks.length === 0) {
-                showToast("No data to export", "warning");
-                return;
-            }
-
-            const headers = ["ID", "Type", "Created Date & Time", "Modified Date & Time", "Comments"];
-            const rows = breaks.map(b => [
-                b.id,
-                `"${b.type}"`,
-                `"${formatDate(b.createdAt)}"`,
-                `"${formatDate(b.modifiedAt)}"`,
-                `"${(b.comments || '').replace(/"/g, '""')}"`
-            ]);
-
-            const csvContent = "data:text/csv;charset=utf-8," 
-                + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `hydrolog_breaks_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            showToast("CSV exported successfully!");
-        }
-
-        function exportJSON() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(breaks, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `hydrolog_backup_${new Date().toISOString().split('T')[0]}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-            showToast("JSON Backup downloaded");
-        }
-
-        function importJSON(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                try {
-                    const imported = JSON.parse(event.target.result);
-                    if (Array.isArray(imported)) {
-                        breaks = imported;
-                        saveLocalStorage();
-                        showToast("Data imported successfully!");
-                    } else {
-                        showToast("Invalid JSON file format", "error");
-                    }
-                } catch (err) {
-                    showToast("Error reading JSON file", "error");
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        function clearAllData() {
-            if (confirm("Are you sure you want to clear ALL logged break data? This action cannot be undone.")) {
-                breaks = [];
-                saveLocalStorage();
-                showToast("All data cleared", "info");
-            }
-        }
-
-        function showToast(message, type = "success") {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-
-            const bgClass = type === 'success' ? 'bg-slate-900 text-white' : type === 'warning' ? 'bg-amber-600 text-white' : 'bg-rose-600 text-white';
-
-            toast.className = `pointer-events-auto flex items-center gap-2 px-4 py-3 rounded-xl shadow-xl text-xs sm:text-sm font-semibold ${bgClass} transition-all transform translate-y-2 opacity-0`;
-            toast.innerHTML = `<span>${message}</span>`;
-
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 200);
-            }, 3000);
-        }
-
-        function escapeHtml(str) {
-            return str.replace(/[&<>'"]/g, 
-                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-            );
-        }
-
-        function setupEventListeners() {
-            // Drawer triggers
-            document.getElementById('openMenuBtn').addEventListener('click', openDrawer);
-            document.getElementById('closeMenuBtn').addEventListener('click', closeDrawer);
-            document.getElementById('menuDrawerOverlay').addEventListener('click', (e) => {
-                if (e.target.id === 'menuDrawerOverlay') closeDrawer();
-            });
-
-            // Drawer Export shortcuts
-            document.getElementById('drawerExportCsvBtn').addEventListener('click', () => {
-                closeDrawer();
-                exportToCSV();
-            });
-            document.getElementById('drawerExportJsonBtn').addEventListener('click', () => {
-                closeDrawer();
-                exportJSON();
-            });
-
-            // Confirmation modal triggers
-            document.getElementById('cancelConfirmBtn').addEventListener('click', closeConfirmModal);
-            document.getElementById('proceedConfirmBtn').addEventListener('click', executeConfirmedLog);
-
-            // Modal triggers
-            document.getElementById('openLogModalBtn').addEventListener('click', () => openModal());
-            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-            document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
-            document.getElementById('breakForm').addEventListener('submit', saveBreak);
-
-            // Export & Data operations
-            document.getElementById('importJsonBtn').addEventListener('click', () => document.getElementById('importFileInput').click());
-            document.getElementById('importFileInput').addEventListener('change', importJSON);
-            document.getElementById('clearDataBtn').addEventListener('click', clearAllData);
-
-            // Filter controls
-            document.getElementById('searchInput').addEventListener('input', renderTable);
-            document.getElementById('typeFilter').addEventListener('change', renderTable);
-            document.getElementById('dateFilter').addEventListener('change', renderTable);
-        }
-    </script>
+        const modifiedFormatted = new Date(record.modifiedDate).toLocaleString([], {
+          year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit'
+        });
+
+        const badgeClass = record.type === 'Number One' 
+          ? 'bg-sky-100 text-sky-800 border-sky-200' 
+          : 'bg-amber-100 text-amber-800 border-amber-200';
+
+        const badgeIcon = record.type === 'Number One' ? 'fa-droplet' : 'fa-toilet';
+
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-medium">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs border font-semibold ${badgeClass}">
+              <i class="fa-solid ${badgeIcon}"></i> ${record.type}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-slate-600 font-mono text-[11px]">${createdFormatted}</td>
+          <td class="py-3 px-4 text-slate-500 font-mono text-[11px]">${modifiedFormatted}</td>
+          <td class="py-3 px-4 max-w-xs truncate text-slate-700">${record.comments ? escapeHtml(record.comments) : '<span class="text-slate-300 italic">None</span>'}</td>
+          <td class="py-3 px-4 text-center">
+            <div class="flex items-center justify-center gap-2">
+              <button onclick="editRecord('${record.id}')" class="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition" title="Edit">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button onclick="deleteRecord('${record.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded transition" title="Delete">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    // Edit Logic
+    window.editRecord = function(id) {
+      const record = breakRecords.find(r => r.id === id);
+      if (!record) return;
+
+      document.getElementById('edit-id').value = record.id;
+      document.getElementById('edit-type').value = record.type;
+      document.getElementById('edit-notes').value = record.comments || '';
+
+      editModal.classList.remove('hidden');
+    };
+
+    document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+      editModal.classList.add('hidden');
+    });
+
+    document.getElementById('save-edit-btn').addEventListener('click', () => {
+      const id = document.getElementById('edit-id').value;
+      const record = breakRecords.find(r => r.id === id);
+      if (record) {
+        record.type = document.getElementById('edit-type').value;
+        record.comments = document.getElementById('edit-notes').value.trim();
+        record.modifiedDate = new Date().toISOString();
+        saveRecords();
+        renderTable();
+      }
+      editModal.classList.add('hidden');
+    });
+
+    // Delete Logic
+    window.deleteRecord = function(id) {
+      if (confirm('Are you sure you want to delete this record?')) {
+        breakRecords = breakRecords.filter(r => r.id !== id);
+        saveRecords();
+        renderTable();
+      }
+    };
+
+    // Export to CSV with Filename Timestamping
+    function exportToCSV() {
+      if (breakRecords.length === 0) {
+        alert('No data available to export.');
+        return;
+      }
+
+      const headers = ['ID', 'Type', 'Created Date', 'Modified Date', 'Comments'];
+      const rows = breakRecords.map(r => [
+        `"${r.id}"`,
+        `"${r.type}"`,
+        `"${r.createdDate}"`,
+        `"${r.modifiedDate}"`,
+        `"${(r.comments || '').replace(/"/g, '""')}"`
+      ]);
+
+      const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', getExportFilename('csv'));
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Export to JSON Backup
+    function exportToJSON() {
+      if (breakRecords.length === 0) {
+        alert('No data available to export.');
+        return;
+      }
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(breakRecords, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", getExportFilename('json'));
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    document.getElementById('header-export-btn').addEventListener('click', exportToCSV);
+    document.getElementById('drawer-export-csv').addEventListener('click', () => { closeDrawer(); exportToCSV(); });
+    document.getElementById('drawer-export-json').addEventListener('click', () => { closeDrawer(); exportToJSON(); });
+
+    document.getElementById('drawer-clear-data').addEventListener('click', () => {
+      closeDrawer();
+      if (confirm('Warning: This will permanently delete all logged breaks. Continue?')) {
+        breakRecords = [];
+        saveRecords();
+        renderTable();
+      }
+    });
+
+    // Graphics Overlay Navigation Options
+    document.getElementById('nav-home').addEventListener('click', () => {
+      closeDrawer();
+    });
+
+    document.getElementById('nav-dashboard').addEventListener('click', () => {
+      closeDrawer();
+      openGraphicsModal('Dashboard Overview', 'dashboard');
+    });
+
+    document.getElementById('nav-hourly').addEventListener('click', () => {
+      closeDrawer();
+      openGraphicsModal('Hourly Break Frequency', 'hourly');
+    });
+
+    document.getElementById('nav-type').addEventListener('click', () => {
+      closeDrawer();
+      openGraphicsModal('Type Breakdown', 'type');
+    });
+
+    document.getElementById('close-graphics-btn').addEventListener('click', () => {
+      graphicsModal.classList.add('hidden');
+    });
+
+    function openGraphicsModal(title, viewType) {
+      graphicsTitle.innerHTML = `<i class="fa-solid fa-chart-line text-indigo-200"></i> ${title}`;
+
+      document.getElementById('view-dashboard-content').classList.add('hidden');
+      document.getElementById('view-hourly-content').classList.add('hidden');
+      document.getElementById('view-type-content').classList.add('hidden');
+
+      if (viewType === 'dashboard') {
+        document.getElementById('view-dashboard-content').classList.remove('hidden');
+      } else if (viewType === 'hourly') {
+        document.getElementById('view-hourly-content').classList.remove('hidden');
+      } else if (viewType === 'type') {
+        document.getElementById('view-type-content').classList.remove('hidden');
+      }
+
+      graphicsModal.classList.remove('hidden');
+      renderCharts();
+    }
+
+    // Chart.js Analytics Rendering
+    function renderCharts() {
+      const totalCount = breakRecords.length;
+      const num1Count = breakRecords.filter(r => r.type === 'Number One').length;
+      const num2Count = breakRecords.filter(r => r.type === 'Number Two').length;
+
+      document.getElementById('metric-total').textContent = totalCount;
+      document.getElementById('metric-num1').textContent = num1Count;
+      document.getElementById('metric-num2').textContent = num2Count;
+
+      // 1. Pie Chart
+      const ctxPie = document.getElementById('chart-pie-modal').getContext('2d');
+      if (chartPie) chartPie.destroy();
+      chartPie = new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+          labels: ['Number One', 'Number Two'],
+          datasets: [{
+            data: [num1Count, num2Count],
+            backgroundColor: ['#0ea5e9', '#f59e0b']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      // 2. Hourly Chart
+      const hourlyData = Array(24).fill(0);
+      breakRecords.forEach(r => {
+        const hour = new Date(r.createdDate).getHours();
+        hourlyData[hour]++;
+      });
+
+      const ctxHourly = document.getElementById('chart-hourly-modal').getContext('2d');
+      if (chartHourly) chartHourly.destroy();
+      chartHourly = new Chart(ctxHourly, {
+        type: 'line',
+        data: {
+          labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+          datasets: [{
+            label: 'Breaks Logged',
+            data: hourlyData,
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      // 3. Type Bar Chart
+      const ctxBar = document.getElementById('chart-bar-modal').getContext('2d');
+      if (chartBar) chartBar.destroy();
+      chartBar = new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+          labels: ['Number One', 'Number Two'],
+          datasets: [{
+            label: 'Visit Count',
+            data: [num1Count, num2Count],
+            backgroundColor: ['#0ea5e9', '#f59e0b']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    // Table Filter and Search Listeners
+    document.getElementById('filter-type').addEventListener('change', renderTable);
+    document.getElementById('search-input').addEventListener('input', renderTable);
+
+    // Initial Load
+    renderTable();
+  </script>
 </body>
 </html>
