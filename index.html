@@ -338,7 +338,8 @@
 
   <!-- JAVASCRIPT LOGIC -->
   <script>
-    const STORAGE_KEY = 'hydrolog_records_v5';
+    // Kept consistent with earlier versions so existing local data remains persistent
+    const STORAGE_KEY = 'hydrolog_records_v4';
     let breakRecords = [];
     let pendingTypeToSave = null;
     let chartInstance = null;
@@ -356,39 +357,46 @@
         if (stored) {
           breakRecords = JSON.parse(stored);
         } else {
-          // Seed initial records
-          const baseDate = new Date();
-          breakRecords = [
-            {
-              id: '1',
-              type: 'Number One',
-              createdDate: new Date(baseDate.setHours(17, 16)).toISOString(),
-              modifiedDate: new Date(baseDate.setHours(17, 16)).toISOString(),
-              comments: 'Normal lots of bubbles'
-            },
-            {
-              id: '2',
-              type: 'Number One',
-              createdDate: new Date(baseDate.setHours(15, 46)).toISOString(),
-              modifiedDate: new Date(baseDate.setHours(15, 46)).toISOString(),
-              comments: 'Morning glass of water'
-            },
-            {
-              id: '3',
-              type: 'Number Two',
-              createdDate: new Date(baseDate.setHours(13, 16)).toISOString(),
-              modifiedDate: new Date(baseDate.setHours(13, 16)).toISOString(),
-              comments: 'Post-coffee routine'
-            },
-            {
-              id: '4',
-              type: 'Number One',
-              createdDate: new Date(baseDate.setHours(9, 16)).toISOString(),
-              modifiedDate: new Date(baseDate.setHours(9, 16)).toISOString(),
-              comments: ''
-            }
-          ];
-          saveRecords();
+          // Fallback check for v5 key if created in previous session
+          const legacyV5 = localStorage.getItem('hydrolog_records_v5');
+          if (legacyV5) {
+            breakRecords = JSON.parse(legacyV5);
+            saveRecords();
+          } else {
+            // Seed initial records if no storage exists
+            const baseDate = new Date();
+            breakRecords = [
+              {
+                id: '1',
+                type: 'Number One',
+                createdDate: new Date(baseDate.setHours(17, 16)).toISOString(),
+                modifiedDate: new Date(baseDate.setHours(17, 16)).toISOString(),
+                comments: 'Normal lots of bubbles'
+              },
+              {
+                id: '2',
+                type: 'Number One',
+                createdDate: new Date(baseDate.setHours(15, 46)).toISOString(),
+                modifiedDate: new Date(baseDate.setHours(15, 46)).toISOString(),
+                comments: 'Morning glass of water'
+              },
+              {
+                id: '3',
+                type: 'Number Two',
+                createdDate: new Date(baseDate.setHours(13, 16)).toISOString(),
+                modifiedDate: new Date(baseDate.setHours(13, 16)).toISOString(),
+                comments: 'Post-coffee routine'
+              },
+              {
+                id: '4',
+                type: 'Number One',
+                createdDate: new Date(baseDate.setHours(9, 16)).toISOString(),
+                modifiedDate: new Date(baseDate.setHours(9, 16)).toISOString(),
+                comments: ''
+              }
+            ];
+            saveRecords();
+          }
         }
       } catch (e) {
         breakRecords = [];
